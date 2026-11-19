@@ -15,6 +15,16 @@ Monorepo:
 - API base URL comes from `VITE_API_URL` (see `frontend/.env.example`). The dev server runs on port 5173, which must match `FRONTEND_URL` in `backend/.env` for CORS.
 - Verify with `npm run lint` and `npm run build` (runs `tsc -b`).
 
+## Documentation
+
+`README.md` at the repo root is the project's main documentation (project description, tech stack, how to run locally, configuration, testing). After any change, check whether it made the README inaccurate or incomplete, and update it in the same piece of work. Examples:
+- new or changed setup steps, commands, prerequisites or ports
+- new environment variables or changed defaults
+- new apps, services or major dependencies (database, queue, cache, auth method)
+- new major features or a change in project status
+
+Don't update it for internal changes that don't affect how the project is described, set up or run.
+
 ## Commit messages
 
 Format: `<type>(<app>/<feature or part>): <message>`
