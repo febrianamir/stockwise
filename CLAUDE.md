@@ -4,6 +4,17 @@ Monorepo:
 - `backend/` — Laravel REST API (see `backend/CLAUDE.md` for Laravel/Boost guidelines)
 - `frontend/` — React app that consumes the API
 
+## Frontend
+
+- React 19 + Vite + TypeScript + Tailwind CSS v4 (`@import "tailwindcss"` in `src/index.css`, no config file).
+- Import from `src` via the `@/` alias.
+- All backend calls go through the central client in `src/lib/api/` (`api.get/post/put/patch/delete`). Don't call `fetch` directly.
+  - Add one module per resource (e.g. `src/lib/api/products.ts`) and re-export it from `src/lib/api/index.ts`.
+  - Keep TypeScript types in `src/lib/api/types.ts` in sync with the backend's API Resources.
+  - Errors are thrown as `ApiError` (`status`, `errors`, `fieldError(field)`, `isValidationError`, `isUnauthorized`).
+- API base URL comes from `VITE_API_URL` (see `frontend/.env.example`). The dev server runs on port 5173, which must match `FRONTEND_URL` in `backend/.env` for CORS.
+- Verify with `npm run lint` and `npm run build` (runs `tsc -b`).
+
 ## Commit messages
 
 Format: `<type>(<app>/<feature or part>): <message>`
