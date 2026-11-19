@@ -39,3 +39,7 @@ Examples:
 - `chore(frontend/deps): upgrade react-router`
 
 If a change touches both `backend/` and `frontend/`, split it into two commits, one per app, each following the format above. Never mix backend and frontend files in a single commit.
+
+Root-level / general files (`README.md`, `CLAUDE.md`, `compose.yaml`, `docker/`, etc.):
+- If they are the only files changed, use the `repo` scope, e.g. `docs(repo/readme): ...`.
+- If they change together with `backend/` or `frontend/` files, include them in that app's commit; don't split them out.
