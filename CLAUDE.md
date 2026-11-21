@@ -20,6 +20,22 @@ Rules:
 - When a page has its own spec in `docs/design/`, read it before implementing that page.
 - When a design decision changes intentionally, update the relevant design document in the same piece of work.
 
+### Installed frontend skills and precedence
+
+Project skills in `.claude/skills/`: `frontend-design`, `react-best-practices` (`vercel-react-best-practices`), `web-design-guidelines` and `shadcn`. They are general-purpose guidance written for many kinds of project. Use them, but when they disagree with this project, apply this order:
+
+1. `docs/design/*` (design system, UI guidelines, page specs)
+2. `CLAUDE.md` (this file, `frontend/CLAUDE.md`)
+3. Installed skills
+
+When a skill rule is overridden, follow the project rule. Mention the conflict only if it affects the result.
+
+Known overrides:
+- **`frontend-design`:** don't take its "distinctive / take aesthetic risk" direction for app UI. Stockwise follows `design-system.md`: a calm, consistent SaaS admin look, Inter, muted emerald primary, a dark sidebar, small radii, minimal shadows, and dense but readable tables. Its guidance on writing, restraint, accessibility and avoiding templated filler still applies.
+- **`web-design-guidelines`:** use **sentence case** for headings, buttons, labels and menu items (e.g. "Add product", "View all sales"), not Title Case. Its other accessibility, forms, focus, typography (`…`, `tabular-nums`) and `Intl.*` formatting rules apply.
+- **`react-best-practices`:** use **TanStack Query** for server state and request deduplication, not SWR (`client-swr-dedup`). This is a Vite single-page app with no React Server Components, server actions or Next.js. Skip the `server-*` rules, `next/dynamic` and hydration-specific rules. Use `React.lazy` with dynamic `import()` for code splitting. The client- and render-performance rules apply.
+- **`shadcn`:** follow its component and composition rules (for example `FieldGroup`/`Field`, `data-icon`, `gap-*` not `space-y-*`, `cn()` for conditional classes, semantic tokens, `Empty`/`Skeleton`/`Badge`). But theme values (fonts, colours, radius, status colours) come from `design-system.md`, and new tokens such as `success`, `warning` and `info` must be added to the theme in `src/index.css` rather than written as raw colours. Use only the `@shadcn` registry unless the user names another one.
+
 ## Frontend
 
 - React 19 + Vite + TypeScript + Tailwind CSS v4 (`@import "tailwindcss"` in `src/index.css`, no config file).
