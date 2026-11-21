@@ -4,6 +4,18 @@ Monorepo:
 - `backend/` — Laravel REST API (see `backend/CLAUDE.md` for Laravel/Boost guidelines)
 - `frontend/` — React app that consumes the API
 
+## Business documents (required for all feature work)
+
+`docs/business/business-rules.md` describes the business domain: who Stockwise is for, the main entities (company/tenant, branch, warehouse, user, company membership, branch and warehouse access), the business and security rules (with IDs such as `CO-1` and `SEC-3`), roles and permissions, and which resources are company-wide or branch-specific. It is imported below, so it is always in context:
+
+@docs/business/business-rules.md
+
+Rules:
+- Consult it before designing or building any feature, in `backend/` or `frontend/`: data models, migrations, endpoints, authorisation, validation, UI flows and tests.
+- For domain behaviour it is the source of truth. If a request conflicts with a rule, point out the conflict (cite the rule ID) and ask before deviating. Don't silently pick one.
+- Enforce tenant and branch isolation on the backend (`SEC-1`–`SEC-4`). Authorisation checks permissions, not role names. The one exception is ownership invariants (last owner, ownership transfer, the Owner's implicit access to all locations), which check the Owner role directly (business rules §4.2). Cover isolation rules with tests, for example "a user from company A gets no data from company B".
+- When a feature settles an open question, decides a resource's scope, or adds or changes a rule, update the document in the same piece of work.
+
 ## Design documents (required for all frontend work)
 
 Before starting any frontend work (new pages, components, styling, layout, UX copy, or frontend data handling), read and follow:

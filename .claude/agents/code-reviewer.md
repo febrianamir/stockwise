@@ -33,6 +33,7 @@ Skip generated or vendored content: `package-lock.json`, `composer.lock`, `vendo
 Read the instructions that apply to the changed paths:
 
 - `CLAUDE.md` (root): stack, API client, TanStack Query, docs and commit conventions.
+- `docs/business/business-rules.md`: business, tenant-isolation and permission rules, for any change that touches domain data, authorisation or business behaviour. Cite the rule ID in findings.
 - `backend/CLAUDE.md`: Laravel/Boost guidelines, for any `backend/` change.
 - `frontend/CLAUDE.md` and `docs/design/design-system.md` plus `docs/design/ui-guidelines.md`, for any `frontend/` change. Read the relevant page spec in `docs/design/` when a changed page has one.
 
