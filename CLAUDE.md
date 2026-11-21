@@ -8,10 +8,20 @@ Monorepo:
 
 - React 19 + Vite + TypeScript + Tailwind CSS v4 (`@import "tailwindcss"` in `src/index.css`, no config file).
 - Import from `src` via the `@/` alias.
+- UI components: shadcn/ui (Base UI primitives, `base-nova` style, config in `components.json`).
+  - Add components with `npx shadcn@latest add <name>`; they land in `src/components/ui/`. Use them before writing custom ones.
+  - Theme colours are CSS variables in `src/index.css`; use the semantic utilities (`bg-background`, `text-muted-foreground`, `text-destructive`, …) instead of raw palette colours. Dark mode is class-based (`.dark` on an ancestor).
+  - Merge class names with `cn()` from `@/lib/utils`.
+- Icons: `lucide-react` only.
 - All backend calls go through the central client in `src/lib/api/` (`api.get/post/put/patch/delete`). Don't call `fetch` directly.
   - Add one module per resource (e.g. `src/lib/api/products.ts`) and re-export it from `src/lib/api/index.ts`.
   - Keep TypeScript types in `src/lib/api/types.ts` in sync with the backend's API Resources.
   - Errors are thrown as `ApiError` (`status`, `errors`, `fieldError(field)`, `isValidationError`, `isUnauthorized`).
+- Server state uses TanStack Query (`QueryClient` in `src/lib/query-client.ts`). Don't fetch in `useEffect`.
+  - Each resource module exports plain request functions, a key factory and `queryOptions` factories, e.g. `productKeys` and `productQueries.list(filters)`, following `src/lib/api/users.ts`. Components call `useQuery(productQueries.list(filters))`.
+  - Pass the query's `signal` through to the request function so cancelled queries abort the HTTP request.
+  - Mutations use `useMutation` and then invalidate the affected keys (`queryClient.invalidateQueries({ queryKey: productKeys.all })`).
+  - Errors are typed as `ApiError` by default. 4xx responses are not retried; network and 5xx errors are retried twice.
 - API base URL comes from `VITE_API_URL` (see `frontend/.env.example`). The dev server runs on port 5173, which must match `FRONTEND_URL` in `backend/.env` for CORS.
 - Verify with `npm run lint` and `npm run build` (runs `tsc -b`).
 
@@ -39,6 +49,8 @@ Examples:
 - `chore(frontend/deps): upgrade react-router`
 
 If a change touches both `backend/` and `frontend/`, split it into two commits, one per app, each following the format above. Never mix backend and frontend files in a single commit.
+
+Do not add a `Co-Authored-By: Claude ...` trailer (or any other AI attribution line) to commit messages unless the user explicitly asks for it in that request.
 
 Root-level / general files (`README.md`, `CLAUDE.md`, `compose.yaml`, `docker/`, etc.):
 - If they are the only files changed, use the `repo` scope, e.g. `docs(repo/readme): ...`.

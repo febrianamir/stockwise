@@ -10,9 +10,9 @@ Stockwise is a point-of-sale (POS) system built for businesses that operate acro
 | --- | --- |
 | `backend/` | Laravel 13 (PHP 8.3+) REST API, Laravel Sanctum, PHPUnit, Laravel Pint, Laravel Boost |
 | Database | PostgreSQL 18 (Docker Compose for local dev) |
-| `frontend/` | React 19, Vite, TypeScript, Tailwind CSS v4, Oxlint |
+| `frontend/` | React 19, Vite, TypeScript, Tailwind CSS v4, shadcn/ui (Base UI), Lucide icons, TanStack Query, Oxlint |
 
-The frontend talks to the backend over a versioned JSON API at `/api/v1`, through a central client in `frontend/src/lib/api/`.
+The frontend talks to the backend over a versioned JSON API at `/api/v1`, through a central client in `frontend/src/lib/api/`, with TanStack Query handling caching, refetching and request state.
 
 ## Repository structure
 

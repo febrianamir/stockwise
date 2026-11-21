@@ -1,59 +1,62 @@
-import { useEffect, useState } from 'react'
-import { getCurrentUser, isApiError, type User } from '@/lib/api'
+import { useQuery } from '@tanstack/react-query'
+import { CircleCheck, CircleX, LoaderCircle, RefreshCw } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { userQueries } from '@/lib/api'
 
-type ApiStatus =
-  | { state: 'checking' }
-  | { state: 'signed-in'; user: User }
-  | { state: 'signed-out' }
-  | { state: 'error'; message: string }
+function ApiStatus() {
+  const { data: user, error, isPending, isFetching, refetch } = useQuery(userQueries.current())
 
-function App() {
-  const [status, setStatus] = useState<ApiStatus>({ state: 'checking' })
+  if (isPending) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <LoaderCircle className="size-4 animate-spin" />
+        Connecting to API…
+      </div>
+    )
+  }
 
-  useEffect(() => {
-    const controller = new AbortController()
-
-    getCurrentUser(controller.signal)
-      .then((user) => setStatus({ state: 'signed-in', user }))
-      .catch((error: unknown) => {
-        if (controller.signal.aborted) {
-          return
-        }
-        if (isApiError(error) && error.isUnauthorized) {
-          setStatus({ state: 'signed-out' })
-        } else {
-          setStatus({ state: 'error', message: error instanceof Error ? error.message : 'Unknown error' })
-        }
-      })
-
-    return () => controller.abort()
-  }, [])
+  // A 401 means the API answered: it's reachable, the visitor just isn't signed in.
+  const isReachable = user !== undefined || error?.isUnauthorized === true
 
   return (
-    <main className="flex min-h-svh items-center justify-center bg-slate-50 p-4 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <h1 className="text-2xl font-semibold tracking-tight">Stockwise</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">React + Vite + TypeScript + Tailwind</p>
-
-        <div className="mt-6 flex items-center gap-3 rounded-lg bg-slate-100 px-4 py-3 text-sm dark:bg-slate-800">
-          <span
-            className={
-              'size-2.5 shrink-0 rounded-full ' +
-              (status.state === 'checking'
-                ? 'animate-pulse bg-slate-400'
-                : status.state === 'error'
-                  ? 'bg-red-500'
-                  : 'bg-emerald-500')
-            }
-          />
-          <span>
-            {status.state === 'checking' && 'Connecting to API…'}
-            {status.state === 'signed-out' && 'API connected · not signed in'}
-            {status.state === 'signed-in' && `API connected · signed in as ${status.user.name}`}
-            {status.state === 'error' && `API error: ${status.message}`}
-          </span>
-        </div>
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center gap-2 text-sm">
+        {isReachable ? (
+          <CircleCheck className="size-4 text-emerald-600" />
+        ) : (
+          <CircleX className="size-4 text-destructive" />
+        )}
+        <span>
+          {user && <>Signed in as {user.name}</>}
+          {error?.isUnauthorized && 'API connected · not signed in'}
+          {error && !error.isUnauthorized && `API error: ${error.message}`}
+        </span>
       </div>
+      <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
+        <RefreshCw className={isFetching ? 'animate-spin' : undefined} />
+        Retry
+      </Button>
+    </div>
+  )
+}
+
+function App() {
+  return (
+    <main className="flex min-h-svh items-center justify-center bg-background p-4 text-foreground">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-2xl">Stockwise</CardTitle>
+          <CardDescription>Point of sale for multiple stores, warehouses and cashiers</CardDescription>
+          <CardAction>
+            <Badge variant="secondary">v0.1</Badge>
+          </CardAction>
+        </CardHeader>
+        <CardContent>
+          <ApiStatus />
+        </CardContent>
+      </Card>
     </main>
   )
 }
