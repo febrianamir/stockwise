@@ -10,7 +10,7 @@ class UserResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @return array{id: int, name: string, email: string, email_verified_at: ?string, created_at: ?string, updated_at: ?string}
+     * @return array{id: int, name: string, email: string, phone: ?string, email_verified_at: ?string, created_at: ?string, updated_at: ?string}
      */
     public function toArray(Request $request): array
     {
@@ -18,6 +18,7 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
+            'phone' => $this->phone,
             'email_verified_at' => $this->email_verified_at?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),

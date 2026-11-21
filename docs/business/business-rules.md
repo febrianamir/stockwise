@@ -157,7 +157,7 @@ A membership does not automatically give access to every location. Branch access
 | Manager | Company, assigned locations | Manages assigned branches or warehouses and their operations |
 | Cashier | Company, assigned branches | Handles sales and checkout |
 
-Superadmin is a platform role held by Stockwise operators. It is not a company membership, and it is the only role that may act on a company without one (CO-3). What a Superadmin may do inside a company's data is still open (see [open questions](#6-open-questions)). Owner, Admin, Manager and Cashier are company roles held through a membership.
+Superadmin is a platform role held by Stockwise operators, stored as `users.is_superadmin` and created by `SuperadminSeeder` from `SUPERADMIN_*` in `backend/.env`. It is not a company membership, and it is the only role that may act on a company without one (CO-3). What a Superadmin may do inside a company's data is still open (see [open questions](#6-open-questions)). Owner, Admin, Manager and Cashier are company roles held through a membership.
 
 ### 4.2 Roles map to permissions
 

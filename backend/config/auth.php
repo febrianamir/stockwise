@@ -114,4 +114,37 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | One-Time Codes
+    |--------------------------------------------------------------------------
+    |
+    | Emailed codes used for email verification and password reset. See
+    | AUTH-4 to AUTH-7 in docs/features/auth/prd.md before changing these.
+    |
+    */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Platform Superadmin
+    |--------------------------------------------------------------------------
+    |
+    | Credentials used by Database\Seeders\SuperadminSeeder. Set them in .env;
+    | the password must meet the password rules (AUTH-2).
+    |
+    */
+
+    'superadmin' => [
+        'name' => env('SUPERADMIN_NAME', 'Stockwise Superadmin'),
+        'email' => env('SUPERADMIN_EMAIL'),
+        'password' => env('SUPERADMIN_PASSWORD'),
+    ],
+
+    'one_time_codes' => [
+        'length' => 6,
+        'ttl_minutes' => 10,
+        'max_attempts' => 5,
+        'resend_cooldown_seconds' => 60,
+    ],
+
 ];

@@ -34,6 +34,16 @@ class UserFactory extends Factory
     }
 
     /**
+     * Indicate that the user is the platform Superadmin.
+     */
+    public function superadmin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_superadmin' => true,
+        ]);
+    }
+
+    /**
      * Indicate that the model's email address should be unverified.
      */
     public function unverified(): static
