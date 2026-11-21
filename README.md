@@ -21,6 +21,7 @@ stockwise/
 ├── backend/    # Laravel REST API
 ├── frontend/   # React single-page app
 ├── docker/     # Init scripts for local services (e.g. creates the test database)
+├── docs/design/  # Design system, UI guidelines and page specs (read before frontend work)
 ├── compose.yaml  # Local PostgreSQL container (stockwise-postgres)
 ├── CLAUDE.md   # Conventions for AI-assisted development (commit rules, etc.)
 └── README.md

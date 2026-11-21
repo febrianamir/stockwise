@@ -4,6 +4,22 @@ Monorepo:
 - `backend/` — Laravel REST API (see `backend/CLAUDE.md` for Laravel/Boost guidelines)
 - `frontend/` — React app that consumes the API
 
+## Design documents (required for all frontend work)
+
+Before starting any frontend work (new pages, components, styling, layout, UX copy, or frontend data handling), read and follow:
+
+- `docs/design/design-system.md`: visual language, including colour tokens, typography, spacing, radius, shadows, layout shell, buttons, forms, tables, status badges, icons, charts, responsiveness, interaction states and accessibility.
+- `docs/design/ui-guidelines.md`: how UI is built, including reuse before creation, page structure, navigation and tenant/branch context, tables, forms, feedback states, dialogs, permissions, React implementation rules, the AI agent workflow and the UI Definition of Done.
+- `docs/design/dashboard-spec.md`: requirements for the `/dashboard` page, including KPIs, chart, widgets, API contract, business rules, states, responsive layout and acceptance criteria. Use it as the template for how other page specs are structured.
+
+These are auto-imported by `frontend/CLAUDE.md`, but read them explicitly when starting frontend work from the repo root.
+
+Rules:
+- For visual and UX decisions, the design documents are the source of truth. If they conflict with existing code or with the conventions below, point out the conflict and ask before deviating. Don't silently pick one.
+- Follow the agent workflow and Definition of Done in `ui-guidelines.md` §15–16. A UI task is not complete just because it compiles: verify it in the browser (desktop and mobile, interactions, console errors), or state clearly that browser verification was not done.
+- When a page has its own spec in `docs/design/`, read it before implementing that page.
+- When a design decision changes intentionally, update the relevant design document in the same piece of work.
+
 ## Frontend
 
 - React 19 + Vite + TypeScript + Tailwind CSS v4 (`@import "tailwindcss"` in `src/index.css`, no config file).
