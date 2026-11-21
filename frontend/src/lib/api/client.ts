@@ -47,16 +47,25 @@ export function isApiError(error: unknown): error is ApiError {
   return error instanceof ApiError
 }
 
-/** Bearer token persistence (Sanctum personal access tokens). */
+const tokenListeners = new Set<() => void>()
+// Kept in memory too, so the session still works when storage is unavailable.
+let memoryToken: string | null | undefined
+
+/** Bearer token persistence (Sanctum personal access tokens). Observable for React via `subscribe`. */
 export const authToken = {
   get(): string | null {
-    try {
-      return localStorage.getItem(TOKEN_STORAGE_KEY)
-    } catch {
-      return null
+    if (memoryToken !== undefined) {
+      return memoryToken
     }
+    try {
+      memoryToken = localStorage.getItem(TOKEN_STORAGE_KEY)
+    } catch {
+      memoryToken = null
+    }
+    return memoryToken
   },
   set(token: string | null): void {
+    memoryToken = token
     try {
       if (token) {
         localStorage.setItem(TOKEN_STORAGE_KEY, token)
@@ -66,7 +75,22 @@ export const authToken = {
     } catch {
       // Storage unavailable (private mode, blocked); the token just won't persist.
     }
+    tokenListeners.forEach((listener) => listener())
   },
+  /** Notified when the token changes in this tab or another one. Use with `useSyncExternalStore`. */
+  subscribe(listener: () => void): () => void {
+    tokenListeners.add(listener)
+    return () => tokenListeners.delete(listener)
+  },
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (event) => {
+    if (event.key === TOKEN_STORAGE_KEY || event.key === null) {
+      memoryToken = undefined
+      tokenListeners.forEach((listener) => listener())
+    }
+  })
 }
 
 let unauthorizedHandler: ((error: ApiError) => void) | null = null

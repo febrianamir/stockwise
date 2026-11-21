@@ -120,6 +120,25 @@ Semantic colors must not be used for decoration.
 
 Do not use color alone to communicate meaning. Include text, icons, or labels.
 
+### Implementation mapping
+
+Tokens live in `frontend/src/index.css` and are used through Tailwind utilities. Most names come from shadcn/ui.
+
+| Design token | Tailwind utility |
+| --- | --- |
+| `primary`, `primary-foreground`, `primary-hover` | `bg-primary`, `text-primary-foreground`, `hover:bg-primary-hover` |
+| `background`, `foreground` | `bg-background`, `text-foreground` |
+| `surface` | `bg-card` (also `bg-popover` for menus) |
+| `surface-muted`, `muted` | `bg-muted` |
+| `muted-foreground` | `text-muted-foreground` |
+| `border` | `border-border` (default border colour) |
+| `danger` | `text-destructive` / `bg-destructive` (alias `text-danger`) |
+| `success`, `warning`, `info` | `text-success`, `text-warning`, `text-info` |
+| `*-muted` | `bg-success-muted`, `bg-warning-muted`, `bg-danger-muted`, `bg-info-muted` |
+| `sidebar`, `sidebar-foreground`, `sidebar-active` | `bg-sidebar`, `text-sidebar-foreground`, `bg-sidebar-accent` |
+
+Status badges use the `Badge` variants `success`, `warning`, `info` and `destructive`, which pair the muted background with the base colour.
+
 ---
 
 ## 4. Typography
@@ -210,6 +229,15 @@ Avoid arbitrary spacing values unless the layout requires them.
 | `radius-xl` |  12px | Large dialogs or special containers |
 
 Avoid excessively rounded components.
+
+**Implementation mapping.** shadcn components use one Tailwind step larger than the design name, so the utilities are set to give the design values:
+
+| Tailwind utility | Value | Used by |
+| --- | ---: | --- |
+| `rounded-sm`, `rounded-md` | 4px | Menu items, badges (`radius-sm`) |
+| `rounded-lg` | 6px | Buttons, inputs, dropdowns (`radius-md`) |
+| `rounded-xl` | 8px | Cards, panels (`radius-lg`) |
+| `rounded-2xl` and larger | 12px | Large dialogs (`radius-xl`) |
 
 Stockwise should look like a professional business application, not a mobile social app.
 

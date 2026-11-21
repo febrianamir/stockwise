@@ -9,6 +9,29 @@ export async function getCurrentUser(signal?: AbortSignal): Promise<User> {
   return response.data
 }
 
+export interface UpdateProfileInput {
+  name: string
+  phone: string | null
+}
+
+/** PATCH /api/v1/user — update personal information. */
+export async function updateProfile(input: UpdateProfileInput): Promise<User> {
+  const response = await api.patch<ApiResource<User>>('/user', { body: input })
+
+  return response.data
+}
+
+export interface UpdatePasswordInput {
+  current_password: string
+  password: string
+  password_confirmation: string
+}
+
+/** PUT /api/v1/user/password — change the password. Other devices are logged out. */
+export function updatePassword(input: UpdatePasswordInput): Promise<void> {
+  return api.put<void>('/user/password', { body: input })
+}
+
 /** Query keys for user data. Invalidate `userKeys.all` to refetch everything user-related. */
 export const userKeys = {
   all: ['users'] as const,

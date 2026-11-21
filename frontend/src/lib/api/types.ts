@@ -35,7 +35,24 @@ export interface User {
   id: number
   name: string
   email: string
+  phone: string | null
   email_verified_at: string | null
   created_at: string | null
   updated_at: string | null
+}
+
+/** Register and login responses: the user plus a Sanctum bearer token. */
+export interface AuthResponse extends ApiResource<User> {
+  token: string
+}
+
+/** Plain `{ message }` responses, e.g. "code sent". */
+export interface MessageResponse {
+  message: string
+}
+
+/** 429 body from the auth rate limiters and the resend cooldown. */
+export interface RetryAfterBody {
+  message: string
+  retry_after: number
 }
