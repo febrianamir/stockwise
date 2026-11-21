@@ -103,21 +103,17 @@ Don't update it for internal changes that don't affect how the project is descri
 
 ## Commit messages
 
-Format: `<type>(<app>/<feature or part>): <message>`
+Commits are grouped **by feature**, not by app. One commit holds everything for a feature or change, including `backend/`, `frontend/`, docs and root files. Unrelated features go in separate commits.
 
-- `<type>`: a conventional commit type — `feat`, `fix`, `chore`, `refactor`, `test`, `docs`, `style`, `perf`, `build`, `ci`, etc.
-- `<app>`: `backend` for changes under `backend/`, `frontend` for changes under `frontend/`.
-- `<feature or part>`: the feature or area touched, e.g. `auth`, `api`, `cors`, `products`.
+Format: `<type>(<scope>): <message>`
+
+- `<type>`: a conventional commit type: `feat`, `fix`, `chore`, `refactor`, `test`, `docs`, `style`, `perf`, `build`, `ci`, etc.
+- `<scope>`: the feature or area, e.g. `auth`, `products`, `dashboard`, `deps`. Don't prefix the app, whether the commit touches one app or both.
+  - If it touches only root-level files (`README.md`, `CLAUDE.md`, `compose.yaml`, `docker/`, `docs/`, `.claude/`), use `repo/<part>`, e.g. `docs(repo/readme): ...`.
 
 Examples:
-- `feat(backend/auth): add Sanctum SPA login endpoint`
-- `fix(backend/api): return JSON 401 instead of redirecting guests`
-- `chore(frontend/deps): upgrade react-router`
-
-If a change touches both `backend/` and `frontend/`, split it into two commits, one per app, each following the format above. Never mix backend and frontend files in a single commit.
+- `feat(auth): add email OTP verification`
+- `fix(api): return JSON 401 instead of redirecting guests`
+- `chore(deps): upgrade react-router`
 
 Do not add a `Co-Authored-By: Claude ...` trailer (or any other AI attribution line) to commit messages unless the user explicitly asks for it in that request.
-
-Root-level / general files (`README.md`, `CLAUDE.md`, `compose.yaml`, `docker/`, etc.):
-- If they are the only files changed, use the `repo` scope, e.g. `docs(repo/readme): ...`.
-- If they change together with `backend/` or `frontend/` files, include them in that app's commit; don't split them out.

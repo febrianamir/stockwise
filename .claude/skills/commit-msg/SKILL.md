@@ -25,9 +25,9 @@ git diff --staged
 
 Only the staged diff counts. Ignore unstaged and untracked changes: they are not part of this commit. If the diff is very large, read `git diff --staged --stat` first, then read the files that matter most.
 
-Before writing the message, check the staged paths against the monorepo rules in the root `CLAUDE.md`:
+Before writing the message, check the staged paths against the commit rules in the root `CLAUDE.md`. Commits are grouped by feature, so `backend/` and `frontend/` changes for the same feature belong in one commit.
 
-- If the staged changes include files under **both** `backend/` and `frontend/`, **stop**. Tell the user the project rules require separate commits for backend and frontend, and list which staged files belong to each app. Ask them to restage one app at a time. Do not commit.
+- If the staged changes clearly mix **unrelated** features (for example auth and products), **stop**. List which staged files belong to each feature and ask the user to restage one feature at a time. Do not commit.
 
 ## 3. Generate the message
 
@@ -52,12 +52,11 @@ type(scope): short subject
 | `style` | Formatting only (no logic change) |
 | `test` | Adding or changing tests only |
 
-**scope**: follows the project convention `<app>/<feature or part>`:
+**scope**: the feature, following the project convention:
 
-- `backend/<part>` when the staged files are under `backend/`, for example `backend/auth`.
-- `frontend/<part>` when they are under `frontend/`, for example `frontend/dashboard`.
+- `<feature>` for any change in `backend/`, `frontend/` or both, for example `auth` or `dashboard`. Never prefix the app.
 - `repo/<part>` only when every staged file is at the root level (`README.md`, `CLAUDE.md`, `compose.yaml`, `docker/`, `docs/`, `.claude/`, and so on).
-- Root-level files staged together with one app's files take that app's scope.
+- Root-level files staged with app files don't change the scope.
 
 Pick `<part>` from the feature or area most of the diff touches: a short lowercase word such as `auth`, `api`, `products`, `setup` or `deps`.
 

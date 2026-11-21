@@ -119,4 +119,4 @@ npm run build              # type-checks (tsc -b) and builds
 
 ## Contributing
 
-Commit messages follow `<type>(<app>/<feature>): <message>`, e.g. `feat(backend/auth): add login endpoint`. Changes to `backend/` and `frontend/` go in separate commits. See [`CLAUDE.md`](CLAUDE.md) for the full rules.
+Commits are grouped by feature and follow `<type>(<scope>): <message>`, where the scope is the feature, e.g. `feat(auth): add login`. See [`CLAUDE.md`](CLAUDE.md) for the full rules.
