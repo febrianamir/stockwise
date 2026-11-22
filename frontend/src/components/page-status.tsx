@@ -16,11 +16,11 @@ export function PageLoading({ label = 'Loading…' }: { label?: string }) {
 export function PageError({ message, onRetry, isRetrying }: { message: string; onRetry: () => void; isRetrying?: boolean }) {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-3 p-4 text-center">
-      <p className="text-sm font-medium">Something went wrong</p>
+      <p className="text-sm font-medium">Something Went Wrong</p>
       <p className="max-w-sm text-sm text-muted-foreground">{message}</p>
       <Button variant="outline" onClick={onRetry} disabled={isRetrying}>
         {isRetrying ? <Spinner data-icon="inline-start" aria-hidden="true" /> : <RefreshCw data-icon="inline-start" aria-hidden="true" />}
-        Try again
+        Try Again
       </Button>
     </div>
   )

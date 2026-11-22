@@ -64,7 +64,9 @@ A person who can log in. Users are global: they are not owned by a company (busi
 | `phone` | `varchar(30)` nullable | Added by this feature. Free-form, validated in the form request |
 | `email_verified_at` | `timestamp` nullable | `null` means unverified |
 | `password` | `varchar(255)` | Bcrypt hash (AUTH-2) |
-| `is_superadmin` | `boolean` default `false` | Platform Superadmin (business rules §4.1). Not mass-assignable. Set only by `SuperadminSeeder` |
+| `is_superadmin` | `boolean` default `false` | Platform Superadmin (business rules §4.1). Not mass-assignable. Set by `SuperadminSeeder` or platform user management (UM-4 to UM-6) |
+| `status` | `varchar(16)` default `pending`, indexed | `pending`, `active` or `inactive`. Added by [user management](../user-management/erd.md) |
+| `last_login_at` | `timestamp` nullable, indexed | Last successful login (AUTH-18). Added by [user management](../user-management/erd.md) |
 | `remember_token` | `varchar(100)` nullable | Laravel default. Unused by the token-based API |
 | `created_at`, `updated_at` | `timestamp` | |
 
@@ -101,4 +103,6 @@ A code is **valid** when `consumed_at IS NULL`, `expires_at > now()` and `attemp
 
 ## Future relationships
 
-Company memberships and branch access (business rules §2.5 and §2.6) will reference `users.id`. Deleting a user must then respect MB-5.
+Company memberships and branch access (business rules §2.5 and §2.6) will reference `users.id`. Deleting or deactivating a user must then respect MB-5.
+
+Registration and verification write to `audit_logs` ([user management ERD](../user-management/erd.md)).

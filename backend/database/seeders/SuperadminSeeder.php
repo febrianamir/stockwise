@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserStatus;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Validator;
@@ -11,7 +12,7 @@ use RuntimeException;
 
 /**
  * Creates the platform Superadmin (business rules §4.1) from the `auth.superadmin` config,
- * already verified. Safe to run again: an existing account keeps its password.
+ * already verified and active. Safe to run again: an existing account keeps its password.
  */
 class SuperadminSeeder extends Seeder
 {
@@ -45,6 +46,7 @@ class SuperadminSeeder extends Seeder
 
         $superadmin->is_superadmin = true;
         $superadmin->email_verified_at ??= now();
+        $superadmin->status = UserStatus::Active;
         $superadmin->save();
 
         $this->command?->info("Superadmin ready: {$superadmin->email}");

@@ -30,12 +30,17 @@ export interface ApiErrorBody {
   errors?: Record<string, string[]>
 }
 
+/** Mirrors backend/app/Enums/UserStatus.php (docs/features/user-management/prd.md §3). */
+export type UserStatus = 'pending' | 'active' | 'inactive'
+
 /** Mirrors backend/app/Http/Resources/UserResource.php */
 export interface User {
   id: number
   name: string
   email: string
   phone: string | null
+  status: UserStatus
+  is_superadmin: boolean
   email_verified_at: string | null
   created_at: string | null
   updated_at: string | null
@@ -55,4 +60,48 @@ export interface MessageResponse {
 export interface RetryAfterBody {
   message: string
   retry_after: number
+}
+
+/** Mirrors backend/app/Http/Resources/AdminUserResource.php */
+export interface AdminUser {
+  id: number
+  name: string
+  email: string
+  status: UserStatus
+  is_superadmin: boolean
+  email_verified_at: string | null
+  last_login_at: string | null
+  created_at: string | null
+  updated_at: string | null
+}
+
+/** One entry of a user's account activity, newest first. */
+export interface AdminUserActivity {
+  /** Audit log id; `null` for the derived `user.last_login` entry. */
+  id: number | null
+  action:
+    | 'user.registered'
+    | 'user.created'
+    | 'user.email_verified'
+    | 'user.deactivated'
+    | 'user.reactivated'
+    | 'user.superadmin_granted'
+    | 'user.superadmin_revoked'
+    | 'user.last_login'
+  occurred_at: string
+  actor: { id: number; name: string } | null
+}
+
+/** Mirrors backend/app/Http/Resources/AdminUserDetailResource.php */
+export interface AdminUserDetail extends AdminUser {
+  activity: AdminUserActivity[]
+}
+
+/** GET /admin/users/stats */
+export interface AdminUserStats {
+  total: number
+  active: number
+  inactive: number
+  pending: number
+  unverified: number
 }

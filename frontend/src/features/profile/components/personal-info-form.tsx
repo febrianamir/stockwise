@@ -30,7 +30,7 @@ export function PersonalInfoForm({ user }: { user: User }) {
     <Card>
       <CardHeader>
         <CardTitle>
-          <h2>Personal information</h2>
+          <h2>Personal Information</h2>
         </CardTitle>
         <CardDescription>Your name is shown to your team and on receipts you process.</CardDescription>
       </CardHeader>
@@ -39,7 +39,7 @@ export function PersonalInfoForm({ user }: { user: User }) {
           <FieldGroup className="max-w-md">
             <FormError error={mutation.error} fields={['name', 'phone']} />
             <TextField
-              label="Full name"
+              label="Full Name"
               name="name"
               autoComplete="name"
               required
@@ -58,7 +58,7 @@ export function PersonalInfoForm({ user }: { user: User }) {
             <div>
               <Button type="submit" disabled={mutation.isPending}>
                 {mutation.isPending && <Spinner data-icon="inline-start" aria-hidden="true" />}
-                Save changes
+                Save Changes
               </Button>
             </div>
           </FieldGroup>

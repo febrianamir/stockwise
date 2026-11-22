@@ -28,6 +28,7 @@ Current features:
 | Feature | PRD | ERD |
 | --- | --- | --- |
 | User authentication (register, email OTP verification, login, logout, profile, password change and recovery) | `docs/features/auth/prd.md` | `docs/features/auth/erd.md` |
+| Platform user management (Superadmin: list, search, filter, inspect, create, deactivate and reactivate users, grant or revoke Superadmin; account status; audit log) | `docs/features/user-management/prd.md` | `docs/features/user-management/erd.md` |
 
 Rules:
 - Before changing a feature, in `backend/` or `frontend/`, read its PRD and ERD. The PRD is the source of truth for that feature's behaviour. If a request conflicts with it, cite the rule ID and ask before deviating.
@@ -63,7 +64,7 @@ When a skill rule is overridden, follow the project rule. Mention the conflict o
 
 Known overrides:
 - **`frontend-design`:** don't take its "distinctive / take aesthetic risk" direction for app UI. Stockwise follows `design-system.md`: a calm, consistent SaaS admin look, Inter, muted emerald primary, a dark sidebar, small radii, minimal shadows, and dense but readable tables. Its guidance on writing, restraint, accessibility and avoiding templated filler still applies.
-- **`web-design-guidelines`:** use **sentence case** for headings, buttons, labels and menu items (e.g. "Add product", "View all sales"), not Title Case. Its other accessibility, forms, focus, typography (`…`, `tabular-nums`) and `Intl.*` formatting rules apply.
+- **`web-design-guidelines`:** use **Title Case** for short UI text: page and section headings, card and dialog titles, buttons, links used as actions, form labels, column headers, menu and nav items, badges, select options and stat labels (e.g. "Add Product", "View All Sales", "Created At", "Forgot Password?"). Keep minor words lowercase unless first (a, an, the, and, or, of, to, in, on, for, by, with). Use **sentence case** for longer copy: descriptions, helper text, placeholders, empty-state text, alerts, toasts and error messages. See design-system §4 "Capitalization". Its other accessibility, forms, focus, typography (`…`, `tabular-nums`) and `Intl.*` formatting rules apply.
 - **`react-best-practices`:** use **TanStack Query** for server state and request deduplication, not SWR (`client-swr-dedup`). This is a Vite single-page app with no React Server Components, server actions or Next.js. Skip the `server-*` rules, `next/dynamic` and hydration-specific rules. Use `React.lazy` with dynamic `import()` for code splitting. The client- and render-performance rules apply.
 - **`shadcn`:** follow its component and composition rules (for example `FieldGroup`/`Field`, `data-icon`, `gap-*` not `space-y-*`, `cn()` for conditional classes, semantic tokens, `Empty`/`Skeleton`/`Badge`). But theme values (fonts, colours, radius, status colours) come from `design-system.md`, and new tokens such as `success`, `warning` and `info` must be added to the theme in `src/index.css` rather than written as raw colours. Use only the `@shadcn` registry unless the user names another one.
 
@@ -86,7 +87,7 @@ Known overrides:
   - Mutations use `useMutation` and then invalidate the affected keys (`queryClient.invalidateQueries({ queryKey: productKeys.all })`).
   - Errors are typed as `ApiError` by default. 4xx responses are not retried; network and 5xx errors are retried twice.
 - API base URL comes from `VITE_API_URL` (see `frontend/.env.example`). The dev server runs on port 5173, which must match `FRONTEND_URL` in `backend/.env` for CORS.
-- Folder layout: API modules stay in `src/lib/api/` (see above). Feature UI lives in `src/features/<feature>/` (`pages/`, `components/`, hooks). Shared components live in `src/components/`, for example `TextField`, `FormError` and `layout/AppLayout`. Where `dashboard-spec.md` §17 suggests `features/dashboard/api/`, put that code in `src/lib/api/` instead.
+- Folder layout: API modules stay in `src/lib/api/` (see above). Feature UI lives in `src/features/<feature>/` (`pages/`, `components/`, hooks). Shared components live in `src/components/`, for example `TextField`, `FormError`, `ConfirmDialog`, `UserAvatar` and `layout/AppLayout` (the sidebar shell, built on the shadcn `sidebar`; add new pages to its navigation groups). Where `dashboard-spec.md` §17 suggests `features/dashboard/api/`, put that code in `src/lib/api/` instead.
 - Routing: React Router (library mode). Routes are defined in `src/router.tsx` and every page is lazy-loaded with route `lazy`. Guard routes with `RequireAuth` / `RequireGuest` from `src/features/auth/components/route-guards.tsx`.
 - Auth: Sanctum bearer token in `authToken` (observable). Read the session with `useCurrentUser()` and never read `localStorage` directly. Business routes in the backend must use the `verified` middleware (`AUTH-14`).
 - Verify with `npm run lint` and `npm run build` (runs `tsc -b`).

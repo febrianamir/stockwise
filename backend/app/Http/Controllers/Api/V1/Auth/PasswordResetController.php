@@ -19,13 +19,13 @@ class PasswordResetController extends Controller
     public function __construct(private OneTimeCodeService $oneTimeCodes) {}
 
     /**
-     * Email a reset code when the account exists. Always answers the same way (AUTH-9).
+     * Email a reset code when the account exists and isn't deactivated. Always answers the same way (AUTH-9, UM-3).
      */
     public function forgot(ForgotPasswordRequest $request): JsonResponse
     {
         $user = User::query()->where('email', $request->validated('email'))->first();
 
-        if ($user !== null && $this->oneTimeCodes->secondsUntilResendAllowed($user, OneTimeCodePurpose::PasswordReset) === 0) {
+        if ($user !== null && ! $user->isInactive() && $this->oneTimeCodes->secondsUntilResendAllowed($user, OneTimeCodePurpose::PasswordReset) === 0) {
             $code = $this->oneTimeCodes->issue($user, OneTimeCodePurpose::PasswordReset);
 
             $user->notify(new ResetPasswordCode($code));
@@ -43,7 +43,7 @@ class PasswordResetController extends Controller
     {
         $user = User::query()->where('email', $request->validated('email'))->first();
 
-        if ($user === null || ! $this->oneTimeCodes->consume($user, OneTimeCodePurpose::PasswordReset, $request->validated('code'))) {
+        if ($user === null || $user->isInactive() || ! $this->oneTimeCodes->consume($user, OneTimeCodePurpose::PasswordReset, $request->validated('code'))) {
             throw ValidationException::withMessages([
                 'code' => 'The code is invalid or has expired.',
             ]);
@@ -51,12 +51,10 @@ class PasswordResetController extends Controller
 
         DB::transaction(function () use ($user, $request): void {
             $user->password = $request->validated('password');
-
-            if (! $user->hasVerifiedEmail()) {
-                $user->email_verified_at = now();
-            }
-
             $user->save();
+
+            // The code proves inbox ownership, so this also verifies (and activates) a pending account.
+            $user->markEmailAsVerified();
             $user->tokens()->delete();
         });
 

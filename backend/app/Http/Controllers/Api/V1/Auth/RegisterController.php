@@ -2,20 +2,29 @@
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
+use App\Enums\AuditAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\AuditLogger;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class RegisterController extends Controller
 {
     /**
      * Create an unverified account, email a verification code and log the user in (AUTH-3).
      */
-    public function __invoke(RegisterRequest $request): JsonResponse
+    public function __invoke(RegisterRequest $request, AuditLogger $audit): JsonResponse
     {
-        $user = User::create($request->validated());
+        $user = DB::transaction(function () use ($request, $audit): User {
+            $user = User::create($request->validated());
+            $audit->record(AuditAction::UserRegistered, $user, $user);
+            $user->recordLogin();
+
+            return $user;
+        });
 
         $user->sendEmailVerificationNotification();
 

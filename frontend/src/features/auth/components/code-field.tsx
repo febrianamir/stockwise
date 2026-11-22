@@ -21,7 +21,7 @@ export function CodeField({ value, onChange, error, description, disabled }: Cod
 
   return (
     <Field data-invalid={error ? true : undefined}>
-      <FieldLabel htmlFor={id}>Verification code</FieldLabel>
+      <FieldLabel htmlFor={id}>Verification Code</FieldLabel>
       <InputOTP
         id={id}
         name="code"

@@ -22,7 +22,7 @@ export function TextField({ label, name, error, description, labelAction, requir
       <div className="flex items-center justify-between gap-2">
         <FieldLabel htmlFor={id}>
           {label}
-          {!required && <span className="font-normal text-muted-foreground">(optional)</span>}
+          {!required && <span className="font-normal text-muted-foreground">(Optional)</span>}
         </FieldLabel>
         {labelAction}
       </div>

@@ -32,6 +32,22 @@ export const router = createBrowserRouter([
         lazy: async () => ({ Component: (await import('@/components/layout/app-layout')).AppLayout }),
         children: [
           { path: '/profile', lazy: async () => ({ Component: (await import('@/features/profile/pages/profile-page')).ProfilePage }) },
+          {
+            // Platform user management, Superadmin only (docs/features/user-management/prd.md §8).
+            lazy: async () => ({
+              Component: (await import('@/features/admin-users/components/require-superadmin')).RequireSuperadmin,
+            }),
+            children: [
+              {
+                path: '/admin/users',
+                lazy: async () => ({ Component: (await import('@/features/admin-users/pages/users-page')).UsersPage }),
+              },
+              {
+                path: '/admin/users/:userId',
+                lazy: async () => ({ Component: (await import('@/features/admin-users/pages/user-detail-page')).UserDetailPage }),
+              },
+            ],
+          },
         ],
       },
     ],

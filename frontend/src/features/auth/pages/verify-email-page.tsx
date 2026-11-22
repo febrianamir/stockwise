@@ -58,7 +58,7 @@ export function VerifyEmailPage() {
 
   return (
     <AuthLayout
-      title="Verify your email"
+      title="Verify Your Email"
       description={
         <>
           Enter the 6-digit code we sent to <span className="font-medium text-foreground">{user.email}</span>.
@@ -73,7 +73,7 @@ export function VerifyEmailPage() {
             onClick={() => logoutMutation.mutate()}
             disabled={logoutMutation.isPending}
           >
-            Log out
+            Log Out
           </Button>
         </p>
       }
@@ -89,7 +89,7 @@ export function VerifyEmailPage() {
             description="The code expires in 10 minutes."
           />
           <SubmitButton isPending={verifyMutation.isPending} disabled={code.length !== CODE_LENGTH}>
-            Verify email
+            Verify Email
           </SubmitButton>
           <Button
             type="button"
@@ -98,7 +98,7 @@ export function VerifyEmailPage() {
             disabled={resendMutation.isPending || cooldown.remaining > 0}
           >
             {resendMutation.isPending && <Spinner data-icon="inline-start" aria-hidden="true" />}
-            {cooldown.remaining > 0 ? `Resend code in ${cooldown.remaining}s` : 'Resend code'}
+            {cooldown.remaining > 0 ? `Resend Code in ${cooldown.remaining}s` : 'Resend Code'}
           </Button>
         </FieldGroup>
       </form>

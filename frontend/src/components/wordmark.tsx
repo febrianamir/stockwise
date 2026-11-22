@@ -7,7 +7,7 @@ export function Wordmark({ className }: { className?: string }) {
       <span className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
         <Boxes aria-hidden="true" />
       </span>
-      Stockwise
+      <span data-slot="wordmark-text">Stockwise</span>
     </span>
   )
 }

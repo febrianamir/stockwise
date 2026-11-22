@@ -25,13 +25,13 @@ export function LoginPage() {
 
   return (
     <AuthLayout
-      title="Log in to Stockwise"
+      title="Log In to Stockwise"
       description="Enter your email and password."
       footer={
         <p>
           New to Stockwise?{' '}
           <Link to="/register" className="font-medium text-primary underline-offset-4 hover:underline">
-            Create an account
+            Create an Account
           </Link>
         </p>
       }
@@ -57,11 +57,11 @@ export function LoginPage() {
             error={mutation.error?.fieldError('password')}
             labelAction={
               <Link to="/forgot-password" className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
-                Forgot password?
+                Forgot Password?
               </Link>
             }
           />
-          <SubmitButton isPending={mutation.isPending}>Log in</SubmitButton>
+          <SubmitButton isPending={mutation.isPending}>Log In</SubmitButton>
         </FieldGroup>
       </form>
     </AuthLayout>

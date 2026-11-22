@@ -185,6 +185,13 @@ Suggested font sizes:
 
 Use 14px as the common size for admin interface content. Use 16px for standard body text where readability requires it.
 
+### Capitalization
+
+- **Title Case** for short UI text: page and section headings, card and dialog titles, buttons, action links, form labels, column headers, menu and navigation items, badges, select options and stat labels. Examples: "Add User", "Created At", "Forgot Password?", "Deactivate This User?".
+- Keep minor words lowercase unless they come first: a, an, the, and, or, of, to, in, on, for, by, with. Example: "Log In to Stockwise", "Back to Log In".
+- **Sentence case** for longer copy: descriptions, helper text, placeholders, empty-state text, alerts, toasts and error messages. Example: "Manage all registered users across the Stockwise platform."
+- Sidebar group labels are written in Title Case and displayed in uppercase with CSS.
+
 ---
 
 ## 5. Spacing
@@ -422,6 +429,15 @@ Use badges for statuses such as:
 Statuses must use consistent colors across the application.
 
 Do not create page-specific status colors.
+
+Current mapping (`Badge` variant, always with an icon and text):
+
+| Status | Variant |
+| --- | --- |
+| Active, Verified, Completed, Paid | `success` |
+| Pending, Unverified, Draft | `warning` |
+| Inactive, Failed, Cancelled, Out of stock | `destructive` |
+| Platform roles and informational labels (e.g. Superadmin, Platform Admin) | `info` |
 
 ---
 

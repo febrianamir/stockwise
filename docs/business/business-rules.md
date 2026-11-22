@@ -132,7 +132,7 @@ A membership does not automatically give access to every location. Branch access
 | MB-2 | A user's role can differ between companies. |
 | MB-3 | A user can have access to several branches and warehouses within a company. |
 | MB-4 | Removing a membership immediately revokes the user's access to that company, including all of its branches and warehouses. |
-| MB-5 | No action may leave a company without an owner. This covers removing, demoting or deactivating an owner's membership, and deleting or deactivating the owner's user account. If the user is the last owner of any company, these actions are blocked until another owner exists. |
+| MB-5 | No action may leave a company without an owner. This covers removing, demoting or deactivating an owner's membership, and deleting or deactivating the owner's user account. If the user is the last owner of any company, these actions are blocked until another owner exists. Platform user deactivation must enforce this once companies exist. |
 | MB-6 | Ownership is transferred by first making the new user an owner, then demoting or removing the old owner, in one operation. At no point does the company have zero owners. |
 
 ### Security
@@ -143,7 +143,7 @@ A membership does not automatically give access to every location. Branch access
 | SEC-2 | Frontend filters, hidden buttons and disabled fields are not security controls. |
 | SEC-3 | Every company, branch and warehouse ID sent by the frontend is validated against the user's memberships and location access. |
 | SEC-4 | A denied request reveals nothing about another company's data, including whether a record exists. |
-| SEC-5 | Critical actions are recorded in an audit trail. |
+| SEC-5 | Critical actions are recorded in an audit trail (`audit_logs`, introduced by [platform user management](../features/user-management/erd.md)). |
 
 ## 4. Roles and permissions
 
@@ -157,7 +157,7 @@ A membership does not automatically give access to every location. Branch access
 | Manager | Company, assigned locations | Manages assigned branches or warehouses and their operations |
 | Cashier | Company, assigned branches | Handles sales and checkout |
 
-Superadmin is a platform role held by Stockwise operators, stored as `users.is_superadmin` and created by `SuperadminSeeder` from `SUPERADMIN_*` in `backend/.env`. It is not a company membership, and it is the only role that may act on a company without one (CO-3). What a Superadmin may do inside a company's data is still open (see [open questions](#6-open-questions)). Owner, Admin, Manager and Cashier are company roles held through a membership.
+Superadmin is a platform role held by Stockwise operators, stored as `users.is_superadmin` and created by `SuperadminSeeder` from `SUPERADMIN_*` in `backend/.env`. It is not a company membership, and it is the only role that may act on a company without one (CO-3). Today a Superadmin can administer every user account: list, search and inspect users, create users, deactivate and reactivate accounts, and grant or revoke Superadmin ([user management PRD](../features/user-management/prd.md)). What a Superadmin may do inside a company's business data is still open (see [open questions](#6-open-questions)). Owner, Admin, Manager and Cashier are company roles held through a membership.
 
 ### 4.2 Roles map to permissions
 
@@ -208,7 +208,7 @@ Resolve these when the related feature is designed, then move the answer into th
 2. **Admin location access.** Does an Admin automatically have all branches and warehouses, like the Owner, or only assigned ones?
 3. **"Limited" for Cashier.** What exactly can a cashier see on the dashboard, in inventory and in sales history? For example: only their own branch, only their own sales, only the current shift.
 4. **Deactivated companies and inactive locations.** What does "normal operations" exclude (CO-6, BR-4, WH-4)? Is data still readable? Who can reactivate?
-5. **Critical actions.** Which actions go to the audit trail (SEC-5)? Candidates: membership and role changes, ownership transfers, location access changes, inventory adjustments, stock transfers, voided or refunded sales, price changes, and company, branch and warehouse deactivation.
+5. **Critical actions.** Which actions go to the audit trail (SEC-5)? Already recorded: user registration, creation, email verification, deactivation, reactivation and Superadmin changes. Remaining candidates: membership and role changes, ownership transfers, location access changes, inventory adjustments, stock transfers, voided or refunded sales, price changes, and company, branch and warehouse deactivation.
 6. **Response to out-of-scope IDs.** To satisfy SEC-4, should out-of-scope resources return `404 Not Found` rather than `403 Forbidden`, so the response doesn't confirm the record exists?
 7. **Roles per membership.** Does a membership hold exactly one role, or can a user hold several roles in one company?
 8. **Active company and location context.** How does a request say which company and branch or warehouse it is acting in: in the URL, a header, or a selected context stored on the session or token?

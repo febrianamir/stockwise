@@ -14,7 +14,7 @@ use Illuminate\Validation\ValidationException;
 class AuthenticatedTokenController extends Controller
 {
     /**
-     * Log in and issue a personal access token. Unverified users may log in (PRD §4).
+     * Log in and issue a personal access token. Unverified (pending) users may log in; inactive users may not.
      */
     public function store(LoginRequest $request): UserResource
     {
@@ -25,6 +25,15 @@ class AuthenticatedTokenController extends Controller
                 'email' => __('auth.failed'),
             ]);
         }
+
+        // Checked only after the password, so the status isn't revealed to someone guessing (UM-3).
+        if ($user->isInactive()) {
+            throw ValidationException::withMessages([
+                'email' => 'This account has been deactivated. Contact your Stockwise administrator.',
+            ]);
+        }
+
+        $user->recordLogin();
 
         $token = $user->createToken($request->validated('device_name', 'web'))->plainTextToken;
 

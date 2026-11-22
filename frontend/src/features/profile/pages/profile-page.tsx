@@ -30,11 +30,11 @@ export function ProfilePage() {
       {!isVerified && (
         <Alert>
           <CircleAlert aria-hidden="true" />
-          <AlertTitle>Verify your email</AlertTitle>
+          <AlertTitle>Verify Your Email</AlertTitle>
           <AlertDescription>You need a verified email before you can work in a company.</AlertDescription>
           <AlertAction>
             <Button size="sm" render={<Link to="/verify-email" />} nativeButton={false}>
-              Verify email
+              Verify Email
             </Button>
           </AlertAction>
         </Alert>
@@ -53,7 +53,7 @@ export function ProfilePage() {
               <dd className="truncate font-medium">{user.email}</dd>
             </div>
             <div className="flex flex-col gap-1">
-              <dt className="text-muted-foreground">Email status</dt>
+              <dt className="text-muted-foreground">Email Status</dt>
               <dd>
                 {isVerified ? (
                   <Badge variant="success">
@@ -63,13 +63,13 @@ export function ProfilePage() {
                 ) : (
                   <Badge variant="warning">
                     <CircleAlert data-icon="inline-start" aria-hidden="true" />
-                    Not verified
+                    Not Verified
                   </Badge>
                 )}
               </dd>
             </div>
             <div className="flex flex-col gap-1">
-              <dt className="text-muted-foreground">Member since</dt>
+              <dt className="text-muted-foreground">Member Since</dt>
               <dd className="font-medium">{user.created_at ? memberSinceFormat.format(new Date(user.created_at)) : '—'}</dd>
             </div>
           </dl>

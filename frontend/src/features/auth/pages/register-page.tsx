@@ -33,13 +33,13 @@ export function RegisterPage() {
 
   return (
     <AuthLayout
-      title="Create your account"
+      title="Create Your Account"
       description="Start managing your stores with Stockwise."
       footer={
         <p>
           Already have an account?{' '}
           <Link to="/login" className="font-medium text-primary underline-offset-4 hover:underline">
-            Log in
+            Log In
           </Link>
         </p>
       }
@@ -47,7 +47,7 @@ export function RegisterPage() {
       <form onSubmit={handleSubmit} noValidate>
         <FieldGroup>
           <FormError error={mutation.error} fields={['name', 'email', 'password']} />
-          <TextField label="Full name" name="name" autoComplete="name" required error={fieldError('name')} />
+          <TextField label="Full Name" name="name" autoComplete="name" required error={fieldError('name')} />
           <TextField
             label="Email"
             name="email"
@@ -67,13 +67,13 @@ export function RegisterPage() {
             error={fieldError('password')}
           />
           <TextField
-            label="Confirm password"
+            label="Confirm Password"
             name="password_confirmation"
             type="password"
             autoComplete="new-password"
             required
           />
-          <SubmitButton isPending={mutation.isPending}>Create account</SubmitButton>
+          <SubmitButton isPending={mutation.isPending}>Create Account</SubmitButton>
         </FieldGroup>
       </form>
     </AuthLayout>

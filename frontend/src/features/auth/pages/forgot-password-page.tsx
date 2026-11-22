@@ -22,11 +22,11 @@ export function ForgotPasswordPage() {
 
   return (
     <AuthLayout
-      title="Forgot your password?"
+      title="Forgot Your Password?"
       description="Enter your email and we'll send you a code to reset it."
       footer={
         <Link to="/login" className="font-medium text-primary underline-offset-4 hover:underline">
-          Back to log in
+          Back to Log In
         </Link>
       }
     >
@@ -42,7 +42,7 @@ export function ForgotPasswordPage() {
             required
             error={mutation.error?.fieldError('email')}
           />
-          <SubmitButton isPending={mutation.isPending}>Send code</SubmitButton>
+          <SubmitButton isPending={mutation.isPending}>Send Code</SubmitButton>
         </FieldGroup>
       </form>
     </AuthLayout>

@@ -2,13 +2,14 @@
 
 Stockwise is a point-of-sale (POS) system built for businesses that operate across **multiple stores, warehouses, and cashiers**. It aims to give owners a single place to manage sales at the counter, track stock across every location, and control who can do what at each store.
 
-> **Status:** early development. User authentication is done. Companies, branches and POS features are next.
+> **Status:** early development. User authentication and platform user management are done. Companies, branches and POS features are next.
 
 ## Features
 
 | Feature | Docs |
 | --- | --- |
 | User authentication: register, email verification with a 6-digit code, log in and out, profile, change and recover password | [PRD](docs/features/auth/prd.md) · [ERD](docs/features/auth/erd.md) |
+| Platform user management (Superadmin, at `/admin/users`): search, filter and inspect all users, create users, deactivate and reactivate accounts, grant or revoke Superadmin, audit log | [PRD](docs/features/user-management/prd.md) · [ERD](docs/features/user-management/erd.md) |
 
 ## Tech stack
 

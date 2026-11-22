@@ -59,11 +59,11 @@ export function ResetPasswordPage() {
 
   return (
     <AuthLayout
-      title="Reset your password"
+      title="Reset Your Password"
       description="Enter the code from your email and choose a new password."
       footer={
         <Link to="/login" className="font-medium text-primary underline-offset-4 hover:underline">
-          Back to log in
+          Back to Log In
         </Link>
       }
     >
@@ -89,7 +89,7 @@ export function ResetPasswordPage() {
           />
           <CodeField value={code} onChange={setCode} error={fieldError('code')} description="The code expires in 10 minutes." />
           <TextField
-            label="New password"
+            label="New Password"
             name="password"
             type="password"
             autoComplete="new-password"
@@ -98,14 +98,14 @@ export function ResetPasswordPage() {
             error={fieldError('password')}
           />
           <TextField
-            label="Confirm new password"
+            label="Confirm New Password"
             name="password_confirmation"
             type="password"
             autoComplete="new-password"
             required
           />
           <SubmitButton isPending={resetMutation.isPending} disabled={code.length !== CODE_LENGTH}>
-            Reset password
+            Reset Password
           </SubmitButton>
           <Button
             type="button"
@@ -114,7 +114,7 @@ export function ResetPasswordPage() {
             disabled={resendMutation.isPending || cooldown.remaining > 0 || email.trim() === ''}
           >
             {resendMutation.isPending && <Spinner data-icon="inline-start" aria-hidden="true" />}
-            {cooldown.remaining > 0 ? `Resend code in ${cooldown.remaining}s` : 'Resend code'}
+            {cooldown.remaining > 0 ? `Resend Code in ${cooldown.remaining}s` : 'Resend Code'}
           </Button>
         </FieldGroup>
       </form>

@@ -49,6 +49,7 @@ Anyone who will use Stockwise: owners, admins, managers and cashiers. They all u
 | Authentication | Laravel Sanctum personal access tokens (bearer tokens). The SPA stores the token and sends it as `Authorization: Bearer <token>`. |
 | Verification and recovery | A 6-digit numeric code sent by email. The same mechanism is used for both purposes. |
 | Unverified users | Can log in. Until verified they can only verify, view and update their profile, change their password and log out. Business routes use the `verified` middleware and return `403`. |
+| Account status | `pending` until the first email verification, then `active`. A Superadmin can deactivate an account (`inactive`), which blocks every way of authenticating. Full lifecycle: [user management PRD §3](../user-management/prd.md#3-account-status). |
 | Email in local development | Delivered to Mailpit (`stockwise-mailpit`, inbox at http://localhost:8025). |
 
 ## 5. Rules
@@ -70,6 +71,10 @@ Anyone who will use Stockwise: owners, admins, managers and cashiers. They all u
 | AUTH-13 | Login, registration, code requests and code checks are rate limited (see §7.3). |
 | AUTH-14 | Unverified users get `403` from any route that requires a verified email. |
 | AUTH-15 | Wrong login credentials get one generic message, and the response doesn't say whether the email exists. |
+| AUTH-16 | The first email verification, by code or by password reset (AUTH-10), turns a `pending` account `active`. It never reactivates an `inactive` account. |
+| AUTH-17 | Inactive accounts can't log in: after a correct password they get "This account has been deactivated. Contact your Stockwise administrator." Their tokens are rejected with `401`, "Forgot password" silently sends nothing, and "reset password" returns the generic invalid-code error. |
+| AUTH-18 | Each successful login, and registration, records `last_login_at` without changing `updated_at` (UM-11). |
+| AUTH-19 | Registration and email verification are written to `audit_logs` (`user.registered`, `user.email_verified`). |
 
 Known trade-off: registering with an email that is already taken returns a validation error, which confirms that the account exists. This is accepted for v1 because it is the clearest experience for users. Rate limiting reduces the risk of enumeration.
 
@@ -132,6 +137,8 @@ Base URL: `/api/v1`. All requests and responses are JSON. The user object is `Us
   "name": "Rina Putri",
   "email": "rina@example.com",
   "phone": "+62 812 3456 7890",
+  "status": "active",
+  "is_superadmin": false,
   "email_verified_at": "2026-11-21T08:30:00+00:00",
   "created_at": "2026-11-21T08:00:00+00:00",
   "updated_at": "2026-11-21T08:30:00+00:00"
@@ -158,6 +165,7 @@ Base URL: `/api/v1`. All requests and responses are JSON. The user object is `Us
 | Status | When | Body |
 | --- | --- | --- |
 | `401` | Missing, invalid or revoked token | `{ message: "Unauthenticated." }` |
+| `401` | Token owner was deactivated (AUTH-17) | `{ message: "Unauthenticated." }` |
 | `403` | Unverified user on a route that requires a verified email | `{ message: "Your email address is not verified." }` |
 | `422` | Validation failed, wrong credentials, or a wrong or expired code | `{ message, errors: { field: [..] } }` |
 | `429` | Rate limit or resend cooldown hit | `{ message, retry_after }`, plus a `Retry-After` header |
@@ -188,13 +196,13 @@ The 60-second resend cooldown (AUTH-7) applies on top of these limits. For `/aut
 
 `/` redirects to `/profile` until the dashboard exists. Logged-in users who open a guest page are redirected: unverified users to `/verify-email`, verified users to `/profile`. Guests who open a logged-in page are sent to `/login` and returned to that page after logging in. Logging out, a `401` or logging out in another tab sends every open page to `/login`.
 
-Guest pages use a centred auth layout: the Stockwise wordmark and a card holding the form. Logged-in pages use a simple app header with the wordmark and a user menu (profile, log out). The full application shell with the sidebar and company and branch context arrives with the dashboard.
+Guest pages use a centred auth layout: the Stockwise wordmark and a card holding the form. Logged-in pages use the application shell: a dark sidebar with the account menu at the top (Profile, Log Out) and navigation grouped by area, such as "Platform Admin" for Superadmins. Company and branch context joins the sidebar with company management.
 
 ### UX copy
 
-- Buttons: "Create account", "Log in", "Log out", "Verify email", "Resend code", "Send code", "Reset password", "Save changes", "Change password".
+- Buttons: "Create Account", "Log In", "Log Out", "Verify Email", "Resend Code", "Send Code", "Reset Password", "Save Changes", "Change Password".
 - Helper text for the code field: "Enter the 6-digit code we sent to {email}."
-- Sentence case everywhere (design-system and CLAUDE.md).
+- Title Case for headings, labels, buttons and links; sentence case for descriptions, helper text, toasts and errors (design-system §4 "Capitalization").
 
 ## 9. States
 
@@ -228,7 +236,7 @@ Guest pages use a centred auth layout: the Stockwise wordmark and a card holding
 - [x] Every flow in §6 works end to end against the API.
 - [x] Route guards redirect as described in §8.
 - [x] Field errors, form errors, submitting and success states work as described in §9.
-- [x] The design tokens, sentence case and accessible labels follow the design docs.
+- [x] The design tokens, capitalization rules and accessible labels follow the design docs.
 - [x] Verified in the browser on desktop and mobile with no console errors.
 
 ## 11. Open questions

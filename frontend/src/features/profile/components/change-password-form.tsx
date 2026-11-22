@@ -38,7 +38,7 @@ export function ChangePasswordForm({ email }: { email: string }) {
     <Card>
       <CardHeader>
         <CardTitle>
-          <h2>Change password</h2>
+          <h2>Change Password</h2>
         </CardTitle>
         <CardDescription>Changing your password logs you out on every other device.</CardDescription>
       </CardHeader>
@@ -49,7 +49,7 @@ export function ChangePasswordForm({ email }: { email: string }) {
           <FieldGroup className="max-w-md">
             <FormError error={mutation.error} fields={['current_password', 'password']} />
             <TextField
-              label="Current password"
+              label="Current Password"
               name="current_password"
               type="password"
               autoComplete="current-password"
@@ -57,7 +57,7 @@ export function ChangePasswordForm({ email }: { email: string }) {
               error={fieldError('current_password')}
             />
             <TextField
-              label="New password"
+              label="New Password"
               name="password"
               type="password"
               autoComplete="new-password"
@@ -66,7 +66,7 @@ export function ChangePasswordForm({ email }: { email: string }) {
               error={fieldError('password')}
             />
             <TextField
-              label="Confirm new password"
+              label="Confirm New Password"
               name="password_confirmation"
               type="password"
               autoComplete="new-password"
@@ -75,7 +75,7 @@ export function ChangePasswordForm({ email }: { email: string }) {
             <div>
               <Button type="submit" disabled={mutation.isPending}>
                 {mutation.isPending && <Spinner data-icon="inline-start" aria-hidden="true" />}
-                Change password
+                Change Password
               </Button>
             </div>
           </FieldGroup>
