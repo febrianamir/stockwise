@@ -14,6 +14,8 @@ export interface AdminUserFilters {
   search?: string
   status?: UserStatus
   verification?: 'verified' | 'unverified'
+  /** Users with or without an active company membership. */
+  company?: 'has' | 'none'
   /** `YYYY-MM-DD`, inclusive */
   created_from?: string
   /** `YYYY-MM-DD`, inclusive */

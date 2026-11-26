@@ -36,6 +36,7 @@ class ListUsersRequest extends FormRequest
             'search' => ['nullable', 'string', 'max:100'],
             'status' => ['nullable', Rule::enum(UserStatus::class)],
             'verification' => ['nullable', Rule::in(['verified', 'unverified'])],
+            'company' => ['nullable', Rule::in(['has', 'none'])],
             'created_from' => ['nullable', 'date_format:Y-m-d'],
             'created_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:created_from'],
             'sort' => ['nullable', Rule::in(self::SORTABLE)],

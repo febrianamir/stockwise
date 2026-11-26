@@ -17,6 +17,6 @@ class UserSuperadminController extends Controller
     {
         $user = User::query()->findOrFail($userId);
 
-        return new AdminUserResource($accounts->setSuperadmin($request->user(), $user, $request->boolean('is_superadmin')));
+        return new AdminUserResource($accounts->setSuperadmin($request->user(), $user, $request->boolean('is_superadmin'))->loadActiveCompaniesCount());
     }
 }

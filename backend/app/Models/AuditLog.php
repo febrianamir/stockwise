@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * Append-only record of sensitive actions (SEC-5). See docs/features/user-management/erd.md.
  * Write entries through App\Services\AuditLogger.
  */
-#[Fillable(['actor_id', 'action', 'subject_type', 'subject_id', 'metadata', 'ip_address', 'user_agent'])]
+#[Fillable(['actor_id', 'action', 'subject_type', 'subject_id', 'company_id', 'metadata', 'ip_address', 'user_agent'])]
 class AuditLog extends Model
 {
     public const UPDATED_AT = null;
@@ -37,6 +37,14 @@ class AuditLog extends Model
     public function actor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_id');
+    }
+
+    /**
+     * @return BelongsTo<Company, $this>
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
     }
 
     /**

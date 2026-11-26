@@ -28,6 +28,8 @@ export interface PaginatedResource<T> {
 export interface ApiErrorBody {
   message: string
   errors?: Record<string, string[]>
+  /** Present when the client must react to a specific condition (api-conventions). */
+  code?: string
 }
 
 /** Mirrors backend/app/Enums/UserStatus.php (docs/features/user-management/prd.md §3). */
@@ -69,6 +71,8 @@ export interface AdminUser {
   email: string
   status: UserStatus
   is_superadmin: boolean
+  /** Active company memberships. */
+  companies_count: number
   email_verified_at: string | null
   last_login_at: string | null
   created_at: string | null
@@ -94,7 +98,18 @@ export interface AdminUserActivity {
 
 /** Mirrors backend/app/Http/Resources/AdminUserDetailResource.php */
 export interface AdminUserDetail extends AdminUser {
+  memberships: AdminUserMembership[]
   activity: AdminUserActivity[]
+}
+
+/** A user's company membership, on platform user details (read-only). */
+export interface AdminUserMembership {
+  id: number
+  company: { id: string; name: string; code: string; status: CompanyStatus }
+  role: MembershipRole
+  status: MembershipStatus
+  is_owner: boolean
+  joined_at: string | null
 }
 
 /** GET /admin/users/stats */
@@ -104,4 +119,128 @@ export interface AdminUserStats {
   inactive: number
   pending: number
   unverified: number
+}
+
+/** Mirrors backend/app/Enums/CompanyStatus.php (docs/features/company-management/prd.md §4). */
+export type CompanyStatus = 'active' | 'suspended'
+
+/** Mirrors backend/app/Enums/MembershipRole.php. Exactly one owner per company. */
+export type MembershipRole = 'owner' | 'admin' | 'manager' | 'cashier'
+
+/** Mirrors backend/app/Enums/MembershipStatus.php. */
+export type MembershipStatus = 'active' | 'inactive'
+
+/** Mirrors backend/app/Http/Resources/AdminCompanyResource.php. `id` is the ULID public ID. */
+export interface AdminCompany {
+  id: string
+  name: string
+  code: string
+  status: CompanyStatus
+  owner: { id: number; name: string; email: string; status: UserStatus } | null
+  members_count: number
+  created_at: string | null
+}
+
+/** Mirrors backend/app/Http/Resources/AdminCompanyDetailResource.php */
+export interface AdminCompanyDetail extends AdminCompany {
+  legal_name: string | null
+  tax_id: string | null
+  email: string | null
+  phone: string | null
+  address: string | null
+  timezone: string
+  currency: string
+  suspended_at: string | null
+  suspension_reason: string | null
+  created_by: { id: number; name: string } | null
+  owner_is_active: boolean
+  updated_at: string | null
+}
+
+/** Mirrors backend/app/Http/Resources/CompanyMemberResource.php */
+export interface CompanyMember {
+  id: number
+  user: { id: number; name: string; email: string; status: UserStatus }
+  role: MembershipRole
+  status: MembershipStatus
+  is_owner: boolean
+  joined_at: string | null
+}
+
+/** Mirrors backend/app/Http/Resources/CompanyActivityResource.php */
+export interface CompanyActivity {
+  id: number
+  action:
+    | 'company.created'
+    | 'company.updated'
+    | 'company.suspended'
+    | 'company.reactivated'
+    | 'company.ownership_transferred'
+    | 'company.member_added'
+    | 'company.member_role_changed'
+    | 'company.member_deactivated'
+    | 'company.member_reactivated'
+  occurred_at: string
+  actor: { id: number; name: string } | null
+  /** For member actions: who the action was about. */
+  member: { id: number; name: string } | null
+  metadata: {
+    changes?: Record<string, { from: string | null; to: string | null }>
+    reason?: string
+    note?: string
+    previous_reason?: string
+    previous_status?: string
+    previous_owner_id?: number
+    new_owner_id?: number
+    previous_owner_role?: string
+    new_owner_previous_role?: string
+    timezone?: string
+    currency?: string
+    owner_id?: number
+    user_id?: number
+    role?: string
+    code?: string
+    name?: string
+  }
+}
+
+/** GET /admin/companies/stats */
+export interface AdminCompanyStats {
+  total: number
+  active: number
+  suspended: number
+}
+
+/** Company permissions (backend/app/Enums/CompanyPermission.php), mapped from roles. */
+export type CompanyPermission = 'view-company' | 'manage-company' | 'manage-members'
+
+/** Mirrors backend/app/Http/Resources/MyCompanyResource.php: one of my active memberships. */
+export interface MyCompany {
+  id: string
+  name: string
+  code: string
+  status: CompanyStatus
+  role: MembershipRole
+  is_owner: boolean
+  joined_at: string | null
+}
+
+/** Mirrors backend/app/Http/Resources/CompanyResource.php: a company as its members see it. */
+export interface Company {
+  id: string
+  name: string
+  code: string
+  status: CompanyStatus
+  legal_name: string | null
+  tax_id: string | null
+  email: string | null
+  phone: string | null
+  address: string | null
+  timezone: string
+  currency: string
+  owner: { id: number; name: string; email: string } | null
+  members_count: number
+  created_at: string | null
+  updated_at: string | null
+  membership: { role: MembershipRole; is_owner: boolean; permissions: CompanyPermission[] }
 }

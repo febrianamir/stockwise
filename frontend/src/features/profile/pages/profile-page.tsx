@@ -3,8 +3,9 @@ import { Link } from 'react-router'
 import { Alert, AlertAction, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useCurrentUser } from '@/features/auth/use-current-user'
+import { MyCompaniesList } from '@/features/companies/components/my-companies-list'
 import { ChangePasswordForm } from '../components/change-password-form'
 import { PersonalInfoForm } from '../components/personal-info-form'
 
@@ -73,6 +74,18 @@ export function ProfilePage() {
               <dd className="font-medium">{user.created_at ? memberSinceFormat.format(new Date(user.created_at)) : '—'}</dd>
             </div>
           </dl>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <h2>My Companies</h2>
+          </CardTitle>
+          <CardDescription>The businesses you work in, and your role in each.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <MyCompaniesList />
         </CardContent>
       </Card>
 

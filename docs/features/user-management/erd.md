@@ -68,9 +68,9 @@ Indexes: `(subject_type, subject_id, created_at)` for a subject's history, `acto
 
 Actions recorded by this feature and auth: `user.registered`, `user.created`, `user.email_verified`, `user.deactivated`, `user.reactivated`, `user.superadmin_granted`, `user.superadmin_revoked`.
 
-When companies exist, a nullable `company_id` column will scope company-level entries, so a company's audit trail can be read without crossing tenants (SEC-1).
+A nullable `company_id` column (added by [company management](../company-management/erd.md)) scopes company-level entries, so a company's audit trail can be read without crossing tenants (SEC-1).
 
-## Future relationships
+## Relationships
 
-- Company memberships will reference `users.id`. The user list will then show membership counts and support the "Has company" filter.
+- `company_memberships` references `users.id` ([company management ERD](../company-management/erd.md)). The user list counts active memberships (`companies_count`) and filters on them (`company=has|none`); user details list them. `audit_logs` gained a nullable `company_id` for company-level entries.
 - A `users.public_id` column (e.g. `USR-1024`, unique) is planned for public identifiers. Search will match it exactly.

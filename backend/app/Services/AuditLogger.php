@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\AuditAction;
 use App\Models\AuditLog;
+use App\Models\Company;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
@@ -13,12 +14,15 @@ use Illuminate\Database\Eloquent\Model;
 class AuditLogger
 {
     /**
+     * Call inside the transaction that makes the change (docs/architecture/audit-logging.md).
+     *
      * @param  array<string, mixed>  $metadata
      */
-    public function record(AuditAction $action, ?Model $subject = null, ?User $actor = null, array $metadata = []): AuditLog
+    public function record(AuditAction $action, ?Model $subject = null, ?User $actor = null, array $metadata = [], ?Company $company = null): AuditLog
     {
         return AuditLog::create([
             'actor_id' => $actor?->getKey(),
+            'company_id' => $company?->getKey(),
             'action' => $action,
             'subject_type' => $subject?->getMorphClass(),
             'subject_id' => $subject?->getKey(),

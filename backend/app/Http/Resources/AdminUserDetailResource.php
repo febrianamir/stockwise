@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\AuditLog;
+use App\Models\CompanyMembership;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -47,8 +48,28 @@ class AdminUserDetailResource extends AdminUserResource
             ]);
         }
 
+        $memberships = $this->resource->memberships()
+            ->with('company:id,public_id,name,code,status')
+            ->get()
+            ->sortBy(fn (CompanyMembership $membership) => mb_strtolower($membership->company->name))
+            ->values()
+            ->map(fn (CompanyMembership $membership): array => [
+                'id' => $membership->id,
+                'company' => [
+                    'id' => $membership->company->public_id,
+                    'name' => $membership->company->name,
+                    'code' => $membership->company->code,
+                    'status' => $membership->company->status->value,
+                ],
+                'role' => $membership->role->value,
+                'status' => $membership->status->value,
+                'is_owner' => $membership->isOwner(),
+                'joined_at' => $membership->created_at?->toIso8601String(),
+            ]);
+
         return [
             ...parent::toArray($request),
+            'memberships' => $memberships->all(),
             'activity' => $activity->sortByDesc('occurred_at')->values()->all(),
         ];
     }

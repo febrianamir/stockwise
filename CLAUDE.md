@@ -29,12 +29,23 @@ Current features:
 | --- | --- | --- |
 | User authentication (register, email OTP verification, login, logout, profile, password change and recovery) | `docs/features/auth/prd.md` | `docs/features/auth/erd.md` |
 | Platform user management (Superadmin: list, search, filter, inspect, create, deactivate and reactivate users, grant or revoke Superadmin; account status; audit log) | `docs/features/user-management/prd.md` | `docs/features/user-management/erd.md` |
+| Platform company management (Superadmin: create companies with an owner, list, search, edit, suspend, reactivate, transfer ownership, members and activity; tenant gate) | `docs/features/company-management/prd.md` | `docs/features/company-management/erd.md` |
+| Company workspace (members: My Companies, view a company and its members; Owners and Admins edit the company and manage members; role-to-permission map) | `docs/features/company-workspace/prd.md` | `docs/features/company-workspace/erd.md` |
 
 Rules:
 - Before changing a feature, in `backend/` or `frontend/`, read its PRD and ERD. The PRD is the source of truth for that feature's behaviour. If a request conflicts with it, cite the rule ID and ask before deviating.
 - A new feature gets a new folder with both documents, written before or with the implementation. Use `docs/features/auth/` as the template, and add a row to the table above.
 - When behaviour, the API contract or the schema changes, update the PRD and ERD in the same piece of work. A new migration means the ERD changes.
 - Feature docs must stay consistent with `docs/business/business-rules.md`. Business rules win. Reference them by ID.
+
+## Architecture documents (required for backend and API work)
+
+`docs/architecture/` holds cross-cutting technical conventions: [`api-conventions.md`](docs/architecture/api-conventions.md) (route prefixes, auth vs authorization, error shape and `code`s, pagination, public IDs, optimistic concurrency), [`tenancy.md`](docs/architecture/tenancy.md) (platform vs tenant routes, the `company.member` middleware, tenant-owned tables, isolation tests) and [`audit-logging.md`](docs/architecture/audit-logging.md) (when and how to write `audit_logs`).
+
+Rules:
+- Read the relevant documents before adding endpoints, tenant-owned tables or audited actions, and follow them.
+- Company-scoped endpoints go inside the `/api/v1/companies/{company}` route group (`company.member` middleware), and require a permission with `company.can:<permission>` when they change data (`App\Enums\CompanyPermission`, mapped from roles in `MembershipRole::permissions()`). Platform endpoints go under `/api/v1/admin` (`can:administer-platform`). Never mix the two.
+- When you change or add a convention (a new error `code`, a new list parameter, a new audit action), update the document in the same piece of work.
 
 ## Design documents (required for all frontend work)
 
@@ -87,7 +98,7 @@ Known overrides:
   - Mutations use `useMutation` and then invalidate the affected keys (`queryClient.invalidateQueries({ queryKey: productKeys.all })`).
   - Errors are typed as `ApiError` by default. 4xx responses are not retried; network and 5xx errors are retried twice.
 - API base URL comes from `VITE_API_URL` (see `frontend/.env.example`). The dev server runs on port 5173, which must match `FRONTEND_URL` in `backend/.env` for CORS.
-- Folder layout: API modules stay in `src/lib/api/` (see above). Feature UI lives in `src/features/<feature>/` (`pages/`, `components/`, hooks). Shared components live in `src/components/`, for example `TextField`, `FormError`, `ConfirmDialog`, `UserAvatar` and `layout/AppLayout` (the sidebar shell, built on the shadcn `sidebar`; add new pages to its navigation groups). Where `dashboard-spec.md` §17 suggests `features/dashboard/api/`, put that code in `src/lib/api/` instead.
+- Folder layout: API modules stay in `src/lib/api/` (see above). Feature UI lives in `src/features/<feature>/` (`pages/`, `components/`, hooks). Shared components live in `src/components/`, for example `TextField`, `FormError`, `ConfirmDialog`, `UserAvatar`, `SearchInput`, `ListPagination`, `DateRangeFilter`, `CompanyForm`, the company badges and `layout/AppLayout` (the sidebar shell, built on the shadcn `sidebar`; add new pages to its navigation groups). Where `dashboard-spec.md` §17 suggests `features/dashboard/api/`, put that code in `src/lib/api/` instead.
 - Routing: React Router (library mode). Routes are defined in `src/router.tsx` and every page is lazy-loaded with route `lazy`. Guard routes with `RequireAuth` / `RequireGuest` from `src/features/auth/components/route-guards.tsx`.
 - Auth: Sanctum bearer token in `authToken` (observable). Read the session with `useCurrentUser()` and never read `localStorage` directly. Business routes in the backend must use the `verified` middleware (`AUTH-14`).
 - Verify with `npm run lint` and `npm run build` (runs `tsc -b`).

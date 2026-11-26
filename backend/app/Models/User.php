@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\AuditAction;
+use App\Enums\MembershipRole;
+use App\Enums\MembershipStatus;
 use App\Enums\OneTimeCodePurpose;
 use App\Enums\UserStatus;
 use App\Notifications\VerifyEmailCode;
@@ -15,6 +17,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -55,6 +58,25 @@ class User extends Authenticatable implements MustVerifyEmail
             'status' => UserStatus::class,
             'last_login_at' => 'datetime',
         ];
+    }
+
+    /**
+     * @return HasMany<CompanyMembership, $this>
+     */
+    public function memberships(): HasMany
+    {
+        return $this->hasMany(CompanyMembership::class);
+    }
+
+    /**
+     * Companies this user owns (each company has exactly one owner, CM-3).
+     *
+     * @return BelongsToMany<Company, $this>
+     */
+    public function ownedCompanies(): BelongsToMany
+    {
+        return $this->belongsToMany(Company::class, 'company_memberships')
+            ->wherePivot('role', MembershipRole::Owner->value);
     }
 
     /**
@@ -116,6 +138,25 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->timestamps = false;
         $this->forceFill(['last_login_at' => $this->freshTimestamp()])->saveQuietly();
         $this->timestamps = true;
+    }
+
+    /**
+     * Load `companies_count` on an already retrieved user.
+     */
+    public function loadActiveCompaniesCount(): static
+    {
+        return $this->loadCount(['memberships as companies_count' => fn (Builder $memberships) => $memberships->where('status', MembershipStatus::Active)]);
+    }
+
+    /**
+     * Number of active company memberships, as `companies_count`.
+     *
+     * @param  Builder<User>  $query
+     */
+    #[Scope]
+    protected function withActiveCompaniesCount(Builder $query): void
+    {
+        $query->withCount(['memberships as companies_count' => fn (Builder $memberships) => $memberships->where('status', MembershipStatus::Active)]);
     }
 
     /**

@@ -32,6 +32,16 @@ export const router = createBrowserRouter([
         lazy: async () => ({ Component: (await import('@/components/layout/app-layout')).AppLayout }),
         children: [
           { path: '/profile', lazy: async () => ({ Component: (await import('@/features/profile/pages/profile-page')).ProfilePage }) },
+          // Company workspace (docs/features/company-workspace/prd.md §7). Access is checked by the API.
+          { path: '/companies', lazy: async () => ({ Component: (await import('@/features/companies/pages/my-companies-page')).MyCompaniesPage }) },
+          {
+            path: '/companies/:companyId',
+            lazy: async () => ({ Component: (await import('@/features/companies/pages/company-page')).CompanyPage }),
+          },
+          {
+            path: '/companies/:companyId/edit',
+            lazy: async () => ({ Component: (await import('@/features/companies/pages/company-edit-page')).CompanyEditPage }),
+          },
           {
             // Platform user management, Superadmin only (docs/features/user-management/prd.md §8).
             lazy: async () => ({
@@ -45,6 +55,23 @@ export const router = createBrowserRouter([
               {
                 path: '/admin/users/:userId',
                 lazy: async () => ({ Component: (await import('@/features/admin-users/pages/user-detail-page')).UserDetailPage }),
+              },
+              // Platform company management (docs/features/company-management/prd.md §9).
+              {
+                path: '/admin/companies',
+                lazy: async () => ({ Component: (await import('@/features/admin-companies/pages/companies-page')).CompaniesPage }),
+              },
+              {
+                path: '/admin/companies/new',
+                lazy: async () => ({ Component: (await import('@/features/admin-companies/pages/company-new-page')).CompanyNewPage }),
+              },
+              {
+                path: '/admin/companies/:companyId',
+                lazy: async () => ({ Component: (await import('@/features/admin-companies/pages/company-detail-page')).CompanyDetailPage }),
+              },
+              {
+                path: '/admin/companies/:companyId/edit',
+                lazy: async () => ({ Component: (await import('@/features/admin-companies/pages/company-edit-page')).CompanyEditPage }),
               },
             ],
           },

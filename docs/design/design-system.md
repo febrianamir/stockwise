@@ -436,8 +436,8 @@ Current mapping (`Badge` variant, always with an icon and text):
 | --- | --- |
 | Active, Verified, Completed, Paid | `success` |
 | Pending, Unverified, Draft | `warning` |
-| Inactive, Failed, Cancelled, Out of stock | `destructive` |
-| Platform roles and informational labels (e.g. Superadmin, Platform Admin) | `info` |
+| Inactive, Suspended, Failed, Cancelled, Out of stock | `destructive` |
+| Platform roles and informational labels (e.g. Superadmin, Owner, Platform Admin) | `info` |
 
 ---
 

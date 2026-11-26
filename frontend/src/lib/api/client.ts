@@ -37,6 +37,12 @@ export class ApiError extends Error {
     return this.status === 401
   }
 
+  /** Machine-readable error code, e.g. `STALE_RECORD` (docs/architecture/api-conventions.md). */
+  get code(): string | undefined {
+    const code = (this.body as { code?: unknown } | null)?.code
+    return typeof code === 'string' ? code : undefined
+  }
+
   /** First validation message for a field, handy for form inputs. */
   fieldError(field: string): string | undefined {
     return this.errors[field]?.[0]

@@ -1,10 +1,10 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { PaginatedResource } from '@/lib/api'
-import { formatNumber } from '../format'
+import { formatNumber } from '@/lib/format'
 
-/** "Showing x–y of z" with previous and next (server-side pagination, UM-9). */
-export function UsersPagination({ meta, onPageChange }: { meta: PaginatedResource<unknown>['meta']; onPageChange: (page: number) => void }) {
+/** "Showing x–y of z" with previous and next, for server-side paginated lists (api-conventions). */
+export function ListPagination({ meta, onPageChange }: { meta: PaginatedResource<unknown>['meta']; onPageChange: (page: number) => void }) {
   if (meta.total === 0) {
     return null
   }

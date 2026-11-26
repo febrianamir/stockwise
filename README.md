@@ -2,7 +2,7 @@
 
 Stockwise is a point-of-sale (POS) system built for businesses that operate across **multiple stores, warehouses, and cashiers**. It aims to give owners a single place to manage sales at the counter, track stock across every location, and control who can do what at each store.
 
-> **Status:** early development. User authentication and platform user management are done. Companies, branches and POS features are next.
+> **Status:** early development. User authentication, platform user management, platform company management and the company workspace (members) are done. Branches and POS features are next.
 
 ## Features
 
@@ -10,6 +10,8 @@ Stockwise is a point-of-sale (POS) system built for businesses that operate acro
 | --- | --- |
 | User authentication: register, email verification with a 6-digit code, log in and out, profile, change and recover password | [PRD](docs/features/auth/prd.md) · [ERD](docs/features/auth/erd.md) |
 | Platform user management (Superadmin, at `/admin/users`): search, filter and inspect all users, create users, deactivate and reactivate accounts, grant or revoke Superadmin, audit log | [PRD](docs/features/user-management/prd.md) · [ERD](docs/features/user-management/erd.md) |
+| Company workspace (members, at `/companies`): My Companies, view a company and its members; Owners and Admins edit the company and add, change and deactivate members | [PRD](docs/features/company-workspace/prd.md) · [ERD](docs/features/company-workspace/erd.md) |
+| Platform company management (Superadmin, at `/admin/companies`): create companies with an owner, search and filter, edit, suspend and reactivate, transfer ownership, members and activity; tenant gate for company-scoped routes | [PRD](docs/features/company-management/prd.md) · [ERD](docs/features/company-management/erd.md) |
 
 ## Tech stack
 
@@ -31,6 +33,7 @@ stockwise/
 ├── docker/     # Init scripts for local services (e.g. creates the test database)
 ├── docs/business/  # Business overview, entities, rules, roles and permissions (read before any feature work)
 ├── docs/features/  # Per-feature PRD and ERD (e.g. docs/features/auth/)
+├── docs/architecture/  # Cross-cutting conventions: API, tenancy, audit logging
 ├── docs/design/  # Design system, UI guidelines and page specs (read before frontend work)
 ├── compose.yaml  # Local PostgreSQL (stockwise-postgres) and Mailpit (stockwise-mailpit)
 ├── CLAUDE.md   # Conventions for AI-assisted development (commit rules, etc.)
@@ -66,7 +69,8 @@ This creates the `stockwise` database (used by the app) and `stockwise_test` (us
 ```bash
 cd backend
 composer run setup      # installs dependencies, creates .env, generates the app key and runs migrations
-php artisan db:seed     # optional: creates the Superadmin (SUPERADMIN_* in .env) and a test user (test@example.com / password)
+php artisan db:seed     # optional: creates the Superadmin (SUPERADMIN_* in .env), a test user (test@example.com / password)
+                        # and a "Demo Retail" company it owns, with an admin member (demo-admin@example.com / password)
 composer run dev        # starts the API server, queue worker (sends emails), and log tail
 ```
 

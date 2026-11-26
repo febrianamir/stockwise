@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { adminUserQueries } from '@/lib/api'
 import { cn } from '@/lib/utils'
-import { formatNumber } from '../format'
+import { formatNumber } from '@/lib/format'
 
 const CARDS = [
   { key: 'total', label: 'Total Users', className: 'text-foreground' },

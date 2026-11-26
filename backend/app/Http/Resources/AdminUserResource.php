@@ -26,6 +26,8 @@ class AdminUserResource extends JsonResource
             'email' => $this->email,
             'status' => $this->status->value,
             'is_superadmin' => $this->is_superadmin,
+            // Callers load it with withActiveCompaniesCount() / loadActiveCompaniesCount().
+            'companies_count' => $this->whenCounted('companies_count', fn (): int => (int) $this->companies_count),
             'email_verified_at' => $this->email_verified_at?->toIso8601String(),
             'last_login_at' => $this->last_login_at?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),

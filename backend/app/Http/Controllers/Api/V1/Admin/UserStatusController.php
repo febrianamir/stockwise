@@ -17,7 +17,7 @@ class UserStatusController extends Controller
      */
     public function deactivate(Request $request, int $userId): AdminUserResource
     {
-        return new AdminUserResource($this->accounts->deactivate($request->user(), User::query()->findOrFail($userId)));
+        return new AdminUserResource($this->accounts->deactivate($request->user(), User::query()->findOrFail($userId))->loadActiveCompaniesCount());
     }
 
     /**
@@ -25,6 +25,6 @@ class UserStatusController extends Controller
      */
     public function reactivate(Request $request, int $userId): AdminUserResource
     {
-        return new AdminUserResource($this->accounts->reactivate($request->user(), User::query()->findOrFail($userId)));
+        return new AdminUserResource($this->accounts->reactivate($request->user(), User::query()->findOrFail($userId))->loadActiveCompaniesCount());
     }
 }

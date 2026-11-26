@@ -1,4 +1,4 @@
-import { ChevronsUpDown, LogOut, UserRound, Users } from 'lucide-react'
+import { Building2, ChevronsUpDown, LogOut, Store, UserRound, Users } from 'lucide-react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import { UserAvatar } from '@/components/user-avatar'
 import { Wordmark } from '@/components/wordmark'
@@ -69,12 +69,40 @@ function AppSidebar() {
 
       <SidebarContent>
         {/* Profile and Log Out live in the account menu above. */}
-        {canAdministerPlatform(user) && (
-          <nav aria-label="Main">
+        <nav aria-label="Main">
+          <SidebarGroup>
+            <SidebarGroupLabel className="uppercase tracking-wide">Workspace</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    render={<NavLink to="/companies" onClick={closeMobile} />}
+                    isActive={pathname === '/companies' || pathname.startsWith('/companies/')}
+                    tooltip="My Companies"
+                  >
+                    <Store aria-hidden="true" />
+                    <span>My Companies</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          {canAdministerPlatform(user) && (
             <SidebarGroup>
               <SidebarGroupLabel className="uppercase tracking-wide">Platform Admin</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      render={<NavLink to="/admin/companies" onClick={closeMobile} />}
+                      isActive={pathname.startsWith('/admin/companies')}
+                      tooltip="Companies"
+                    >
+                      <Building2 aria-hidden="true" />
+                      <span>Companies</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       render={<NavLink to="/admin/users" onClick={closeMobile} />}
@@ -88,8 +116,8 @@ function AppSidebar() {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
-          </nav>
-        )}
+          )}
+        </nav>
       </SidebarContent>
 
       <SidebarFooter>

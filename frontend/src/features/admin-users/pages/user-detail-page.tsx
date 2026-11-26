@@ -12,8 +12,10 @@ import { NotFoundPage } from '@/features/not-found-page'
 import { adminUserQueries, type AdminUserDetail } from '@/lib/api'
 import { SuperadminDialog } from '../components/superadmin-dialog'
 import { SuperadminBadge, UserStatusBadge, VerificationBadge } from '../components/user-badges'
+import { UserMemberships } from '../components/user-memberships'
 import { UserStatusDialog, type StatusAction } from '../components/user-status-dialog'
-import { ACTIVITY_LABELS, formatDateTime, STATUS_LABELS } from '../format'
+import { formatDateTime } from '@/lib/format'
+import { ACTIVITY_LABELS, STATUS_LABELS } from '../format'
 
 /** /admin/users/:userId: PRD §6.3 to §6.6. */
 export function UserDetailPage() {
@@ -127,6 +129,8 @@ function UserDetail({ user }: { user: AdminUserDetail }) {
           </dl>
         </CardContent>
       </Card>
+
+      <UserMemberships memberships={user.memberships} />
 
       <Card>
         <CardHeader>

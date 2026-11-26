@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { AdminUser, AdminUserSort, SortDirection } from '@/lib/api'
 import { cn } from '@/lib/utils'
-import { formatDate, formatDateTime } from '../format'
+import { formatDate, formatDateTime, formatNumber } from '@/lib/format'
 import { SuperadminBadge, UserStatusBadge, VerificationBadge } from './user-badges'
 import { UserRowActions } from './user-row-actions'
 import { UserStatusDialog, type StatusAction } from './user-status-dialog'
@@ -67,6 +67,7 @@ export function UsersTable({ users, isLoading, isStale, sort, direction, onSort,
               <TableHead>Email</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Email Verification</TableHead>
+              <TableHead className="text-right">Companies</TableHead>
               {sortable('created_at', 'Created At')}
               {sortable('last_login_at', 'Last Login')}
               <TableHead className="w-12 text-right">
@@ -78,7 +79,7 @@ export function UsersTable({ users, isLoading, isStale, sort, direction, onSort,
             {isLoading
               ? Array.from({ length: SKELETON_ROWS }, (_, index) => (
                   <TableRow key={index}>
-                    <TableCell colSpan={7}>
+                    <TableCell colSpan={8}>
                       <Skeleton className="h-6 w-full" />
                     </TableCell>
                   </TableRow>
@@ -104,6 +105,7 @@ export function UsersTable({ users, isLoading, isStale, sort, direction, onSort,
                     <TableCell>
                       <VerificationBadge verified={user.email_verified_at !== null} />
                     </TableCell>
+                    <TableCell className="text-right tabular-nums">{formatNumber(user.companies_count)}</TableCell>
                     <TableCell className="tabular-nums">{formatDate(user.created_at)}</TableCell>
                     <TableCell
                       className="tabular-nums text-muted-foreground"
@@ -140,7 +142,9 @@ export function UsersTable({ users, isLoading, isStale, sort, direction, onSort,
                     <VerificationBadge verified={user.email_verified_at !== null} />
                     {user.is_superadmin && <SuperadminBadge />}
                   </div>
-                  <span className="text-xs text-muted-foreground tabular-nums">Joined {formatDate(user.created_at)}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums">
+                    Joined {formatDate(user.created_at)} · {formatNumber(user.companies_count)} {user.companies_count === 1 ? 'company' : 'companies'}
+                  </span>
                 </div>
                 <UserRowActions user={user} onAction={openAction} />
               </li>

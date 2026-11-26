@@ -29,10 +29,9 @@ Only Superadmins can do any of this. Company roles never grant access.
 - Cut off access immediately when an account must be disabled.
 - Leave an audit trail for every sensitive action.
 
-### Non-goals (v1), deferred until company management exists
+### Non-goals (v1)
 
-- The Companies column, membership counts, the "Has company / No company" filter and the company memberships section on the details page. When these are added they are read-only: platform user management never changes membership roles.
-- The MB-5 check: deactivating the last owner of a company will be blocked once companies exist.
+- Changing company memberships or roles. Since [company management](../company-management/prd.md), the user list shows each user's company count and the details page lists their memberships, both **read-only**.
 - Public user IDs such as `USR-1024`. These are planned as a future `users.public_id` column that search will match exactly. Today, search matches the numeric internal ID.
 
 Also out of scope: deleting users, editing a user's profile or email, resetting someone else's password, uploading avatars (the table shows initials), and a full activity log for every request.
@@ -67,8 +66,9 @@ Transitions:
 | UM-9 | Listing is paginated, filtered and sorted on the server. The client never downloads the whole user table. |
 | UM-10 | These actions are written to `audit_logs` with the actor, subject, IP address and user agent: user registered, user created, email verified, user deactivated, user reactivated, Superadmin granted, Superadmin revoked (SEC-5). |
 | UM-11 | Each successful login records `last_login_at`. This doesn't change `updated_at`, which stays "last profile update". |
+| UM-12 | A user who owns a company can't be deactivated; the `422` names the companies. Transfer ownership first (MB-5, CM-14). |
 
-Deactivating the last owner of a company will also be blocked (MB-5) once company management exists.
+Deactivating a company owner is blocked (UM-12, MB-5).
 
 ## 5. Authorization
 
@@ -77,7 +77,7 @@ Deactivating the last owner of a company will also be blocked (MB-5) once compan
 | List and search all platform users | Allowed | `403` |
 | View any user's details and activity | Allowed | `403` |
 | Create a user | Allowed | `403` |
-| Deactivate or reactivate a user | Allowed, subject to UM-4 and UM-5 | `403` |
+| Deactivate or reactivate a user | Allowed, subject to UM-4, UM-5 and UM-12 | `403` |
 | Grant or revoke Superadmin | Allowed, subject to UM-4 to UM-6 | `403` |
 
 A Superadmin doesn't need to belong to any company.
@@ -104,6 +104,7 @@ Filters, sort and page are kept in the URL, so a view can be bookmarked or share
 Clicking a user's name, or "View Details", opens `/admin/users/:id`. The page shows:
 
 - **Profile Information:** ID, name, email, account status, email verified, created at, updated at.
+- **Company Memberships:** read-only. Company (linked to its page), role (the owner is marked), membership status, company status and joined date.
 - **Account Activity:** newest first. Account creation, email verification, deactivation and reactivation, Superadmin changes (each with who did it), plus the last successful login. Shows the 100 most recent entries.
 
 ### 6.4 Deactivate a user
@@ -153,11 +154,14 @@ Base URL `/api/v1/admin`. Every endpoint uses the middleware `auth:sanctum`, `ve
   "email_verified_at": "2026-11-21T08:30:00+00:00",
   "last_login_at": "2026-11-22T02:10:00+00:00",
   "created_at": "2026-11-21T08:00:00+00:00",
-  "updated_at": "2026-11-21T08:30:00+00:00"
+  "updated_at": "2026-11-21T08:30:00+00:00",
+  "companies_count": 2
 }
 ```
 
-`AdminUserDetail` is `AdminUser` plus `activity`, newest first:
+`companies_count` counts active memberships.
+
+`AdminUserDetail` is `AdminUser` plus `memberships` (`{ id, company: { id, name, code, status }, role, status, is_owner, joined_at }`, by company name) and `activity`, newest first:
 
 ```json
 { "id": 42, "action": "user.deactivated", "occurred_at": "2026-11-22T03:00:00+00:00", "actor": { "id": 1, "name": "Stockwise Superadmin" } }
@@ -172,6 +176,7 @@ Base URL `/api/v1/admin`. Every endpoint uses the middleware `auth:sanctum`, `ve
 | `search` | Up to 100 characters. Partial name or email, or an exact numeric ID | none |
 | `status` | `active`, `pending`, `inactive` | all |
 | `verification` | `verified`, `unverified` | all |
+| `company` | `has`, `none` (an active company membership or not) | all |
 | `created_from`, `created_to` | `YYYY-MM-DD`, inclusive, in the server's timezone (UTC) | none |
 | `sort` | `name`, `created_at`, `last_login_at` | `created_at` |
 | `direction` | `asc`, `desc` | `desc` |
@@ -185,7 +190,7 @@ Base URL `/api/v1/admin`. Every endpoint uses the middleware `auth:sanctum`, `ve
 | `401` | Missing, invalid or revoked token, or the token owner is inactive |
 | `403` | Not a verified, active Superadmin |
 | `404` | Unknown user ID |
-| `422` | Validation failure, or a safeguard (UM-4 to UM-6, or deactivating or reactivating a user who is already in that state). The message explains why |
+| `422` | Validation failure, or a safeguard (UM-4 to UM-6, UM-12, or deactivating or reactivating a user who is already in that state). The message explains why |
 
 ## 8. Screens
 
@@ -200,7 +205,7 @@ Other users who open these routes see the not-found page, and the API returns `4
 
 - **Header:** "Users", a "Platform Admin" badge, the description "Manage all registered users across the Stockwise platform." and an "Add User" primary button.
 - **Stat cards:** Total Users, Active, Inactive, Pending.
-- **Toolbar:** search ("Name, email or user ID"), status and verification selects, a registration date range, and "Clear Filters".
+- **Toolbar:** search ("Name, email or user ID"), status, verification and company-membership selects, a registration date range, and "Clear Filters".
 - **Desktop table:**
 
   | Column | Content |
@@ -209,6 +214,7 @@ Other users who open these routes see the not-found page, and the API returns `4
   | Email | Email address |
   | Status | Status badge |
   | Email Verification | Verification badge |
+  | Companies | Number of active company memberships |
   | Created At | Registration date |
   | Last Login | Last successful login, or "Never" |
   | Actions | Menu: View Details, Deactivate or Reactivate |

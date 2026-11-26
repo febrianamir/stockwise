@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { adminUserQueries } from '@/lib/api'
 import { CreateUserDialog } from '../components/create-user-dialog'
 import { UserStats } from '../components/user-stats'
-import { UsersPagination } from '../components/users-pagination'
+import { ListPagination } from '@/components/list-pagination'
 import { UsersTable } from '../components/users-table'
 import { UsersToolbar } from '../components/users-toolbar'
 import { DEFAULT_DIRECTION, DEFAULT_SORT, useUserFilters } from '../use-user-filters'
@@ -61,7 +61,7 @@ export function UsersPage() {
               hasActiveFilters={hasActiveFilters}
               onClearFilters={clear}
             />
-            {data && <UsersPagination meta={data.meta} onPageChange={(page) => update({ page })} />}
+            {data && <ListPagination meta={data.meta} onPageChange={(page) => update({ page })} />}
           </>
         )}
       </section>

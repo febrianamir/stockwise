@@ -14,4 +14,13 @@ enum AuditAction: string
     case UserReactivated = 'user.reactivated';
     case UserSuperadminGranted = 'user.superadmin_granted';
     case UserSuperadminRevoked = 'user.superadmin_revoked';
+    case CompanyCreated = 'company.created';
+    case CompanyUpdated = 'company.updated';
+    case CompanySuspended = 'company.suspended';
+    case CompanyReactivated = 'company.reactivated';
+    case CompanyOwnershipTransferred = 'company.ownership_transferred';
+    case CompanyMemberAdded = 'company.member_added';
+    case CompanyMemberRoleChanged = 'company.member_role_changed';
+    case CompanyMemberDeactivated = 'company.member_deactivated';
+    case CompanyMemberReactivated = 'company.member_reactivated';
 }

@@ -3,7 +3,10 @@
 namespace App\Services;
 
 use App\Enums\AuditAction;
+use App\Enums\MembershipRole;
 use App\Enums\UserStatus;
+use App\Models\Company;
+use App\Models\CompanyMembership;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -45,6 +48,22 @@ class UserAccountService
         }
 
         return DB::transaction(function () use ($actor, $user): User {
+            // MB-5, CM-14: every company keeps an owner who can log in. Locking the user's owner
+            // memberships serialises this with a concurrent ownership transfer to them.
+            $ownedCompanyIds = CompanyMembership::query()
+                ->where('user_id', $user->getKey())
+                ->where('role', MembershipRole::Owner)
+                ->lockForUpdate()
+                ->pluck('company_id');
+
+            if ($ownedCompanyIds->isNotEmpty()) {
+                $names = Company::query()->whereKey($ownedCompanyIds)->orderBy('name')->pluck('name')->implode(', ');
+
+                throw ValidationException::withMessages([
+                    'user' => "This user owns {$names}. Transfer ownership before deactivating them.",
+                ]);
+            }
+
             if ($this->isLastActiveSuperadmin($user)) {
                 throw ValidationException::withMessages(['user' => "You can't deactivate the last active Superadmin."]);
             }

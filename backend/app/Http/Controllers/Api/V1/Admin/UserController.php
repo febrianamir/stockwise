@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
+use App\Enums\MembershipStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ListUsersRequest;
 use App\Http\Requests\Admin\StoreUserRequest;
@@ -28,10 +29,13 @@ class UserController extends Controller
         $direction = $request->validated('direction', 'desc');
 
         $users = User::query()
+            ->withActiveCompaniesCount()
             ->search($request->validated('search'))
             ->when($request->validated('status'), fn (Builder $query, string $status) => $query->where('status', $status))
             ->when($request->validated('verification') === 'verified', fn (Builder $query) => $query->whereNotNull('email_verified_at'))
             ->when($request->validated('verification') === 'unverified', fn (Builder $query) => $query->whereNull('email_verified_at'))
+            ->when($request->validated('company') === 'has', fn (Builder $query) => $query->whereHas('memberships', fn (Builder $memberships) => $memberships->where('status', MembershipStatus::Active)))
+            ->when($request->validated('company') === 'none', fn (Builder $query) => $query->whereDoesntHave('memberships', fn (Builder $memberships) => $memberships->where('status', MembershipStatus::Active)))
             ->when($request->validated('created_from'), fn (Builder $query, string $date) => $query->where('created_at', '>=', Carbon::parse($date)->startOfDay()))
             ->when($request->validated('created_to'), fn (Builder $query, string $date) => $query->where('created_at', '<=', Carbon::parse($date)->endOfDay()))
             ->when(
@@ -53,7 +57,7 @@ class UserController extends Controller
     {
         $user = $accounts->create($request->user(), $request->validated());
 
-        return (new AdminUserResource($user->refresh()))->response()->setStatusCode(201);
+        return (new AdminUserResource($user->refresh()->loadActiveCompaniesCount()))->response()->setStatusCode(201);
     }
 
     /**
@@ -61,6 +65,6 @@ class UserController extends Controller
      */
     public function show(int $userId): AdminUserDetailResource
     {
-        return new AdminUserDetailResource(User::query()->findOrFail($userId));
+        return new AdminUserDetailResource(User::query()->findOrFail($userId)->loadActiveCompaniesCount());
     }
 }
