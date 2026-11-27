@@ -5,6 +5,7 @@ import type {
   AdminCompanyDetail,
   AdminCompanyStats,
   ApiResource,
+  Branch,
   CompanyActivity,
   CompanyMember,
   CompanyStatus,
@@ -130,6 +131,11 @@ export async function transferAdminCompanyOwnership(companyId: string, userId: n
   return response.data
 }
 
+/** GET /admin/companies/{id}/branches: read-only (CM-12). */
+export function listAdminCompanyBranches(companyId: string, page: number, signal?: AbortSignal): Promise<PaginatedResource<Branch>> {
+  return api.get<PaginatedResource<Branch>>(`/admin/companies/${companyId}/branches`, { query: { page }, signal })
+}
+
 /** Query keys. Mutations invalidate `adminCompanyKeys.all` (and user keys, for memberships). */
 export const adminCompanyKeys = {
   all: ['admin-companies'] as const,
@@ -139,6 +145,7 @@ export const adminCompanyKeys = {
   detail: (companyId: string) => [...adminCompanyKeys.all, 'detail', companyId] as const,
   members: (companyId: string, filters: AdminCompanyMemberFilters) => [...adminCompanyKeys.detail(companyId), 'members', filters] as const,
   activity: (companyId: string, page: number) => [...adminCompanyKeys.detail(companyId), 'activity', page] as const,
+  branches: (companyId: string, page: number) => [...adminCompanyKeys.detail(companyId), 'branches', page] as const,
 }
 
 export const adminCompanyQueries = {
@@ -168,6 +175,12 @@ export const adminCompanyQueries = {
     queryOptions({
       queryKey: adminCompanyKeys.activity(companyId, page),
       queryFn: ({ signal }) => listAdminCompanyActivity(companyId, page, signal),
+      placeholderData: keepPreviousData,
+    }),
+  branches: (companyId: string, page: number) =>
+    queryOptions({
+      queryKey: adminCompanyKeys.branches(companyId, page),
+      queryFn: ({ signal }) => listAdminCompanyBranches(companyId, page, signal),
       placeholderData: keepPreviousData,
     }),
 }

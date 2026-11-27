@@ -13,16 +13,36 @@ enum MembershipRole: string
     case Cashier = 'cashier';
 
     /**
-     * The permissions this role grants (business rules §4.2: Owner and Admin manage the company
-     * and its members; every member can view it).
+     * The permissions this role grants (business rules §4.2: Owner and Admin manage the company,
+     * its members, its branches and branch access; every member can view the company and the
+     * branches they have access to).
      *
      * @return list<CompanyPermission>
      */
     public function permissions(): array
     {
         return match ($this) {
-            self::Owner, self::Admin => [CompanyPermission::ViewCompany, CompanyPermission::ManageCompany, CompanyPermission::ManageMembers],
-            self::Manager, self::Cashier => [CompanyPermission::ViewCompany],
+            self::Owner, self::Admin => [
+                CompanyPermission::ViewCompany,
+                CompanyPermission::ManageCompany,
+                CompanyPermission::ManageMembers,
+                CompanyPermission::ViewBranches,
+                CompanyPermission::ManageBranches,
+                CompanyPermission::ManageBranchAccess,
+            ],
+            self::Manager, self::Cashier => [CompanyPermission::ViewCompany, CompanyPermission::ViewBranches],
+        };
+    }
+
+    /**
+     * The branch scope a new membership with this role starts with (BM-4): Owners and Admins get
+     * every branch, Managers and Cashiers none until someone assigns them.
+     */
+    public function defaultBranchScope(): BranchScope
+    {
+        return match ($this) {
+            self::Owner, self::Admin => BranchScope::All,
+            self::Manager, self::Cashier => BranchScope::Selected,
         };
     }
 

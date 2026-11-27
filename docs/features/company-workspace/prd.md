@@ -19,6 +19,7 @@ Owners and Admins can also:
 3. Edit the company profile and settings.
 4. Add existing users as members with a role.
 5. Change a member's role, and deactivate or reactivate a membership.
+6. Set which branches a member can work in ([branch management](../branch-management/prd.md) §8.4).
 
 ## 2. Goals and non-goals
 
@@ -32,7 +33,6 @@ Owners and Admins can also:
 - Invitations by email, including people without an account. Members are added from existing active accounts (CW-3).
 - Removing members permanently. Memberships are deactivated, never deleted (CW-5).
 - Assigning or transferring ownership. Ownership moves only through the Superadmin's ownership transfer (CM-13).
-- Branch and warehouse access, which comes with Branch Management.
 - A company activity log for members. Changes are audited and visible to Superadmins.
 
 ## 3. Permissions
@@ -44,6 +44,8 @@ Roles map to permissions (`App\Enums\MembershipRole::permissions()`). Routes che
 | `view-company`: view the profile and the members | ✓ | ✓ | ✓ | ✓ |
 | `manage-company`: edit the profile and settings | ✓ | ✓ | — | — |
 | `manage-members`: add members, change roles, deactivate and reactivate | ✓ | ✓ | — | — |
+
+The branch permissions (`view-branches`, `manage-branches`, `manage-branch-access`) are defined by [branch management](../branch-management/prd.md) §4.
 
 These correspond to "Manage company" and "Manage users" in the business rules §4.2.
 
@@ -72,7 +74,8 @@ The sidebar's "Workspace" group has "My Companies" (`/companies`), and the profi
 `/companies/:id` shows the company name, code, status and the user's role, then:
 
 - **Profile:** name, code, legal name, tax ID, email, phone, address, timezone, currency, owner.
-- **Members:** name, email, role (owner marked), membership status, joined date. Everyone sees this list.
+- **Branches:** the location count and the first branches, linking to the branch list ([branch management](../branch-management/prd.md) §8.5).
+- **Members:** name, email, role (owner marked), membership status, branch access (All Branches or Selected Branches), joined date. Everyone sees this list.
 
 Users without `manage-company` see no Edit button. Users without `manage-members` see no Add Member button and no row actions. The backend rejects these actions anyway (SEC-2).
 
@@ -86,7 +89,7 @@ Users without `manage-company` see no Edit button. Users without `manage-members
 
 ### 5.5 Change a member
 
-Each member row (except the owner's and your own) has a menu: change role (Admin, Manager, Cashier), and deactivate or reactivate. Deactivating asks for confirmation:
+Each member row (except the owner's and your own) has a menu: change role (Admin, Manager, Cashier), **Branch Access** (for `manage-branch-access`, [branch management](../branch-management/prd.md) BM-5), and deactivate or reactivate. Changing a role doesn't change branch access (BM-4). Deactivating asks for confirmation:
 
 > **Deactivate This Member?**
 > {name} will lose access to {company} immediately. Their account and history are kept, and you can reactivate them later.
@@ -108,7 +111,7 @@ Tenant routes under `/api/v1/companies/{company}` use `auth:sanctum`, `verified`
 
 `Company`: the profile fields, `owner` (`{ id, name, email }`), `members_count`, `created_at`, `updated_at` (microseconds) and `membership` (`{ role, is_owner, permissions: string[] }`).
 
-`CompanyMember`: as on the platform: `{ id, user: { id, name, email, status }, role, status, is_owner, joined_at }`.
+`CompanyMember`: as on the platform: `{ id, user: { id, name, email, status }, role, status, is_owner, branch_scope, joined_at }`.
 
 Errors: `401` not logged in; `403` unverified, missing permission, or `COMPANY_SUSPENDED`; `404` not a member, or a membership ID from another company; `409 STALE_RECORD`; `422` validation and safeguards (CW-3 to CW-5, CW-9).
 

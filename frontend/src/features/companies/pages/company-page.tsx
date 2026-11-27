@@ -1,16 +1,18 @@
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, Ban, Pencil, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Pencil, RefreshCw } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import { PageLoading } from '@/components/page-status'
-import { Alert, AlertAction, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { OwnerBadge } from '@/components/company-badges'
 import { ROLE_LABELS } from '@/lib/company'
 import { NotFoundPage } from '@/features/not-found-page'
 import { companyQueries, type Company } from '@/lib/api'
+import { CompanyBranchesSection } from '../components/company-branches-section'
 import { CompanyMembersSection } from '../components/company-members-section'
+import { CompanySuspendedNotice } from '../components/company-suspended-notice'
 import { canInCompany } from '../permissions'
 
 /** /companies/:companyId: docs/features/company-workspace/prd.md §5.2. */
@@ -23,7 +25,7 @@ export function CompanyPage() {
   }
 
   if (error?.code === 'COMPANY_SUSPENDED') {
-    return <SuspendedNotice />
+    return <CompanySuspendedNotice />
   }
 
   if (error && !company) {
@@ -97,23 +99,9 @@ function CompanyView({ company }: { company: Company }) {
         </CardContent>
       </Card>
 
-      <CompanyMembersSection company={company} />
-    </div>
-  )
-}
+      {canInCompany(company, 'view-branches') && <CompanyBranchesSection company={company} />}
 
-function SuspendedNotice() {
-  return (
-    <div className="flex flex-col gap-6">
-      <Link to="/companies" className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="size-4" aria-hidden="true" />
-        My Companies
-      </Link>
-      <Alert variant="destructive">
-        <Ban aria-hidden="true" />
-        <AlertTitle>This company is suspended</AlertTitle>
-        <AlertDescription>You can't access it until a Stockwise administrator reactivates it.</AlertDescription>
-      </Alert>
+      <CompanyMembersSection company={company} />
     </div>
   )
 }

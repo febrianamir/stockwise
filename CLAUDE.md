@@ -31,6 +31,7 @@ Current features:
 | Platform user management (Superadmin: list, search, filter, inspect, create, deactivate and reactivate users, grant or revoke Superadmin; account status; audit log) | `docs/features/user-management/prd.md` | `docs/features/user-management/erd.md` |
 | Platform company management (Superadmin: create companies with an owner, list, search, edit, suspend, reactivate, transfer ownership, members and activity; tenant gate) | `docs/features/company-management/prd.md` | `docs/features/company-management/erd.md` |
 | Company workspace (members: My Companies, view a company and its members; Owners and Admins edit the company and manage members; role-to-permission map) | `docs/features/company-workspace/prd.md` | `docs/features/company-workspace/erd.md` |
+| Branch management (stores and warehouses as branches; Owners and Admins create, edit, deactivate and reactivate them; members' branch access, `all` or `selected`; the `company.branch` and `branch.active` middleware for branch-scoped routes) | `docs/features/branch-management/prd.md` | `docs/features/branch-management/erd.md` |
 
 Rules:
 - Before changing a feature, in `backend/` or `frontend/`, read its PRD and ERD. The PRD is the source of truth for that feature's behaviour. If a request conflicts with it, cite the rule ID and ask before deviating.
@@ -45,6 +46,7 @@ Rules:
 Rules:
 - Read the relevant documents before adding endpoints, tenant-owned tables or audited actions, and follow them.
 - Company-scoped endpoints go inside the `/api/v1/companies/{company}` route group (`company.member` middleware), and require a permission with `company.can:<permission>` when they change data (`App\Enums\CompanyPermission`, mapped from roles in `MembershipRole::permissions()`). Platform endpoints go under `/api/v1/admin` (`can:administer-platform`). Never mix the two.
+- Branch-scoped endpoints go under `/companies/{company}/branches/{branch}/…` with `company.branch` (resolves the branch in the company and checks the member's branch access through `App\Services\BranchAccessService`), plus `branch.active` on operational routes. Never take a branch ID from a request body for scoping ([tenancy](docs/architecture/tenancy.md#branch-context)).
 - When you change or add a convention (a new error `code`, a new list parameter, a new audit action), update the document in the same piece of work.
 
 ## Design documents (required for all frontend work)
@@ -98,7 +100,7 @@ Known overrides:
   - Mutations use `useMutation` and then invalidate the affected keys (`queryClient.invalidateQueries({ queryKey: productKeys.all })`).
   - Errors are typed as `ApiError` by default. 4xx responses are not retried; network and 5xx errors are retried twice.
 - API base URL comes from `VITE_API_URL` (see `frontend/.env.example`). The dev server runs on port 5173, which must match `FRONTEND_URL` in `backend/.env` for CORS.
-- Folder layout: API modules stay in `src/lib/api/` (see above). Feature UI lives in `src/features/<feature>/` (`pages/`, `components/`, hooks). Shared components live in `src/components/`, for example `TextField`, `FormError`, `ConfirmDialog`, `UserAvatar`, `SearchInput`, `ListPagination`, `DateRangeFilter`, `CompanyForm`, the company badges and `layout/AppLayout` (the sidebar shell, built on the shadcn `sidebar`; add new pages to its navigation groups). Where `dashboard-spec.md` §17 suggests `features/dashboard/api/`, put that code in `src/lib/api/` instead.
+- Folder layout: API modules stay in `src/lib/api/` (see above). Feature UI lives in `src/features/<feature>/` (`pages/`, `components/`, hooks). Shared components live in `src/components/`, for example `TextField`, `FormError`, `ConfirmDialog`, `UserAvatar`, `SearchInput`, `ListPagination`, `SortableHead`, `DateRangeFilter`, `CompanyForm`, the company and branch badges and `layout/AppLayout` (the sidebar shell, built on the shadcn `sidebar`; add new pages to its navigation groups). Where `dashboard-spec.md` §17 suggests `features/dashboard/api/`, put that code in `src/lib/api/` instead.
 - Routing: React Router (library mode). Routes are defined in `src/router.tsx` and every page is lazy-loaded with route `lazy`. Guard routes with `RequireAuth` / `RequireGuest` from `src/features/auth/components/route-guards.tsx`.
 - Auth: Sanctum bearer token in `authToken` (observable). Read the session with `useCurrentUser()` and never read `localStorage` directly. Business routes in the backend must use the `verified` middleware (`AUTH-14`).
 - Verify with `npm run lint` and `npm run build` (runs `tsc -b`).
@@ -109,8 +111,9 @@ Playwright (`@playwright/test`, Chromium) is the project's browser testing tool.
 
 - Specs live in `frontend/e2e/*.spec.ts`, configured by `frontend/playwright.config.ts`. It has two projects, `desktop` (Desktop Chrome) and `mobile` (Pixel 7), and starts the Vite dev server or reuses one on port 5173.
 - Import `test` and `expect` from `./fixtures`, not from `@playwright/test`. The fixture fails a test on any console error or uncaught exception. Opt out only where an error is expected, with `test.use({ failOnConsoleError: false })` and a comment saying why. Seeded logins are in `seededUsers`.
+- Don't log in through the UI in every spec: the API allows 5 logins a minute per account. The `setup` project (`e2e/auth.setup.ts`) signs each seeded user in once and saves the session; use it with `test.use({ storageState: authFile('owner') })`. `demoCompany(request)` returns the seeded company and branch IDs for opening URLs directly.
 - Tag specs that need the real API with `@backend` (`test.describe('…', { tag: '@backend' }, …)`). Untagged specs must pass with only the frontend running.
-- Locate elements the way users find them: `getByRole`, `getByLabel`, `getByText`, using the Title Case UI text. Don't use CSS classes or test IDs unless there's no accessible handle.
+- Locate elements the way users find them: `getByRole`, `getByLabel`, `getByText`, using the Title Case UI text. Don't use CSS classes or test IDs unless there's no accessible handle. Link buttons (`Button render={<Link />} nativeButton={false}`) have the `button` role, not `link`. Prefer `{ exact: true }` for short labels such as "Name".
 - A new user-facing flow or page gets specs for its main path and its important states (validation error, empty, permission denied) in the same piece of work. Name spec files by feature, e.g. `e2e/companies.spec.ts`.
 - Run `npm run test:e2e` (all specs, needs the backend) or `npx playwright test --grep-invert @backend` (frontend only). If the backend wasn't running, say which specs weren't run.
 

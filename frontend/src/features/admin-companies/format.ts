@@ -10,6 +10,11 @@ export const COMPANY_ACTIVITY_LABELS: Record<CompanyActivity['action'], string> 
   'company.member_role_changed': 'Member Role Changed',
   'company.member_deactivated': 'Member Deactivated',
   'company.member_reactivated': 'Member Reactivated',
+  'branch.created': 'Branch Created',
+  'branch.updated': 'Branch Updated',
+  'branch.deactivated': 'Branch Deactivated',
+  'branch.reactivated': 'Branch Reactivated',
+  'branch_access.updated': 'Branch Access Changed',
 }
 
 /** Labels for edited fields in the activity log. */
@@ -23,4 +28,6 @@ export const FIELD_LABELS: Record<string, string> = {
   timezone: 'Timezone',
   currency: 'Currency',
   role: 'Role',
+  type: 'Type',
+  branch_access: 'Branch Access',
 }

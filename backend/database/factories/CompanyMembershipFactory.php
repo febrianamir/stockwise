@@ -26,6 +26,8 @@ class CompanyMembershipFactory extends Factory
             'user_id' => User::factory(),
             'role' => MembershipRole::Cashier,
             'status' => MembershipStatus::Active,
+            // The role's default (BM-4), worked out after any role override.
+            'branch_scope' => fn (array $attributes) => ($attributes['role'] instanceof MembershipRole ? $attributes['role'] : MembershipRole::from($attributes['role']))->defaultBranchScope(),
         ];
     }
 

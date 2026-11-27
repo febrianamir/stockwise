@@ -44,6 +44,7 @@ class MembershipService
                 'user_id' => $user->getKey(),
                 'role' => $role,
                 'status' => MembershipStatus::Active,
+                'branch_scope' => $role->defaultBranchScope(),
             ]);
 
             $this->audit->record(AuditAction::CompanyMemberAdded, $membership, $actor, [

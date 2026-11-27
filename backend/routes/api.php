@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Admin\CompanyActivityController;
+use App\Http\Controllers\Api\V1\Admin\CompanyBranchController as AdminCompanyBranchController;
 use App\Http\Controllers\Api\V1\Admin\CompanyController;
 use App\Http\Controllers\Api\V1\Admin\CompanyMemberController;
 use App\Http\Controllers\Api\V1\Admin\CompanyOwnershipController;
@@ -14,8 +15,13 @@ use App\Http\Controllers\Api\V1\Auth\AuthenticatedTokenController;
 use App\Http\Controllers\Api\V1\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Auth\RegisterController;
+use App\Http\Controllers\Api\V1\Company\BranchController;
+use App\Http\Controllers\Api\V1\Company\BranchMemberController;
+use App\Http\Controllers\Api\V1\Company\BranchStatusController;
 use App\Http\Controllers\Api\V1\Company\CompanyController as MemberCompanyController;
+use App\Http\Controllers\Api\V1\Company\MemberBranchAccessController;
 use App\Http\Controllers\Api\V1\Company\MemberController;
+use App\Http\Controllers\Api\V1\Company\MyBranchController;
 use App\Http\Controllers\Api\V1\Company\MyCompanyController;
 use App\Http\Controllers\Api\V1\PasswordController;
 use App\Http\Controllers\Api\V1\ProfileController;
@@ -88,6 +94,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('/companies/{companyId}/transfer-ownership', [CompanyOwnershipController::class, 'transfer'])->whereUlid('companyId')->name('companies.transfer-ownership');
         Route::get('/companies/{companyId}/members', [CompanyMemberController::class, 'index'])->whereUlid('companyId')->name('companies.members');
         Route::get('/companies/{companyId}/activity', [CompanyActivityController::class, 'index'])->whereUlid('companyId')->name('companies.activity');
+        Route::get('/companies/{companyId}/branches', [AdminCompanyBranchController::class, 'index'])->whereUlid('companyId')->name('companies.branches');
     });
 
     /*
@@ -111,5 +118,30 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
                 ->whereNumber('membershipId')
                 ->middleware('company.can:manage-members')
                 ->name('members.update');
+
+            // Branch management: docs/features/branch-management/prd.md §9. `company.branch`
+            // resolves {branch} inside this company (404 otherwise) and checks the member's access
+            // (403 BRANCH_ACCESS_DENIED). Operational branch routes in later modules add `branch.active`.
+            Route::get('/branches', [BranchController::class, 'index'])->middleware('company.can:view-branches')->name('branches.index');
+            Route::post('/branches', [BranchController::class, 'store'])->middleware('company.can:manage-branches')->name('branches.store');
+
+            Route::prefix('branches/{branch}')->whereUlid('branch')->name('branches.')->group(function () {
+                Route::get('/', [BranchController::class, 'show'])->middleware(['company.can:view-branches', 'company.branch'])->name('show');
+                Route::patch('/', [BranchController::class, 'update'])->middleware(['company.can:manage-branches', 'company.branch'])->name('update');
+                Route::post('/deactivate', [BranchStatusController::class, 'deactivate'])->middleware(['company.can:manage-branches', 'company.branch'])->name('deactivate');
+                Route::post('/reactivate', [BranchStatusController::class, 'reactivate'])->middleware(['company.can:manage-branches', 'company.branch'])->name('reactivate');
+                Route::get('/members', [BranchMemberController::class, 'index'])->middleware(['company.can:view-branches', 'company.branch'])->name('members');
+            });
+
+            Route::get('/members/{membershipId}/branch-access', [MemberBranchAccessController::class, 'show'])
+                ->whereNumber('membershipId')
+                ->middleware('company.can:manage-branch-access')
+                ->name('members.branch-access.show');
+            Route::put('/members/{membershipId}/branch-access', [MemberBranchAccessController::class, 'update'])
+                ->whereNumber('membershipId')
+                ->middleware('company.can:manage-branch-access')
+                ->name('members.branch-access.update');
+
+            Route::get('/me/branches', MyBranchController::class)->name('me.branches');
         });
 });

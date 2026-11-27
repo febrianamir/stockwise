@@ -154,6 +154,7 @@ export interface AdminCompanyDetail extends AdminCompany {
   suspension_reason: string | null
   created_by: { id: number; name: string } | null
   owner_is_active: boolean
+  branches_count: number
   updated_at: string | null
 }
 
@@ -164,6 +165,8 @@ export interface CompanyMember {
   role: MembershipRole
   status: MembershipStatus
   is_owner: boolean
+  /** Which branches the member may work in; always `all` for the owner (BR-3). */
+  branch_scope: BranchScope
   joined_at: string | null
 }
 
@@ -180,12 +183,20 @@ export interface CompanyActivity {
     | 'company.member_role_changed'
     | 'company.member_deactivated'
     | 'company.member_reactivated'
+    | 'branch.created'
+    | 'branch.updated'
+    | 'branch.deactivated'
+    | 'branch.reactivated'
+    | 'branch_access.updated'
   occurred_at: string
   actor: { id: number; name: string } | null
   /** For member actions: who the action was about. */
   member: { id: number; name: string } | null
+  /** For branch actions: the branch the action was about. */
+  branch: { id: string; name: string; code: string } | null
   metadata: {
-    changes?: Record<string, { from: string | null; to: string | null }>
+    /** Field edits; `branch_access` holds a scope-and-branches snapshot instead of a string. */
+    changes?: Record<string, { from: string | null; to: string | null } | { from: BranchAccessSnapshot; to: BranchAccessSnapshot }>
     reason?: string
     note?: string
     previous_reason?: string
@@ -212,7 +223,13 @@ export interface AdminCompanyStats {
 }
 
 /** Company permissions (backend/app/Enums/CompanyPermission.php), mapped from roles. */
-export type CompanyPermission = 'view-company' | 'manage-company' | 'manage-members'
+export type CompanyPermission =
+  | 'view-company'
+  | 'manage-company'
+  | 'manage-members'
+  | 'view-branches'
+  | 'manage-branches'
+  | 'manage-branch-access'
 
 /** Mirrors backend/app/Http/Resources/MyCompanyResource.php: one of my active memberships. */
 export interface MyCompany {
@@ -243,4 +260,47 @@ export interface Company {
   created_at: string | null
   updated_at: string | null
   membership: { role: MembershipRole; is_owner: boolean; permissions: CompanyPermission[] }
+}
+
+/** Branch types and statuses (backend/app/Enums/BranchType.php, BranchStatus.php). */
+export type BranchType = 'store' | 'warehouse'
+export type BranchStatus = 'active' | 'inactive'
+/** `all`: every branch, including later ones; `selected`: only the granted ones (BM-3). */
+export type BranchScope = 'all' | 'selected'
+
+/** Mirrors backend/app/Http/Resources/BranchResource.php */
+export interface Branch {
+  id: string
+  name: string
+  code: string
+  type: BranchType
+  status: BranchStatus
+  address: string | null
+  phone: string | null
+  /** Null means the company's timezone (BM-9). */
+  timezone: string | null
+  deactivated_at: string | null
+  deactivation_reason: string | null
+  /** Active members who can work here; absent on `/me/branches`. */
+  members_count?: number
+  created_at: string | null
+  updated_at: string | null
+}
+
+/** A granted branch inside a member's branch access. */
+export type BranchSummary = Pick<Branch, 'id' | 'name' | 'code' | 'type' | 'status'>
+
+/** Mirrors backend/app/Http/Resources/BranchAccessResource.php */
+export interface BranchAccess {
+  membership_id: number
+  scope: BranchScope
+  is_owner: boolean
+  /** Granted branches when `scope` is `selected`; empty otherwise. */
+  branches: BranchSummary[]
+}
+
+/** `branch_access.updated` audit metadata: the scope and granted branch codes. */
+export interface BranchAccessSnapshot {
+  scope: BranchScope
+  branches: string[]
 }

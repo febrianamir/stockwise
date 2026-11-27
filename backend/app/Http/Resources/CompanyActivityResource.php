@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\AuditLog;
+use App\Models\Branch;
 use App\Models\CompanyMembership;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -29,6 +30,10 @@ class CompanyActivityResource extends JsonResource
             // For member actions: the member the action was about.
             'member' => $this->subject instanceof CompanyMembership && $this->subject->user
                 ? ['id' => $this->subject->user->id, 'name' => $this->subject->user->name]
+                : null,
+            // For branch actions: the branch the action was about.
+            'branch' => $this->subject instanceof Branch
+                ? ['id' => $this->subject->public_id, 'name' => $this->subject->name, 'code' => $this->subject->code]
                 : null,
             'metadata' => (object) ($this->metadata ?? []),
         ];

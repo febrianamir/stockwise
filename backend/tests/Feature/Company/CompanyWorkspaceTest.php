@@ -71,12 +71,12 @@ class CompanyWorkspaceTest extends TestCase
             ->assertJsonPath('data.name', 'Toko Sejahtera')
             ->assertJsonPath('data.owner.name', 'Owner')
             ->assertJsonPath('data.membership.role', 'cashier')
-            ->assertJsonPath('data.membership.permissions', ['view-company']);
+            ->assertJsonPath('data.membership.permissions', ['view-company', 'view-branches']);
 
         Sanctum::actingAs($this->owner);
         $this->getJson("/api/v1/companies/{$this->company->public_id}")
             ->assertJsonPath('data.membership.is_owner', true)
-            ->assertJsonPath('data.membership.permissions', ['view-company', 'manage-company', 'manage-members']);
+            ->assertJsonPath('data.membership.permissions', ['view-company', 'manage-company', 'manage-members', 'view-branches', 'manage-branches', 'manage-branch-access']);
     }
 
     public function test_non_members_get_404_and_suspended_companies_get_403(): void

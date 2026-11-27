@@ -7,7 +7,7 @@ This feature adds **no tables**. It works on the tables from [platform company m
 | Table | How this feature uses it |
 | --- | --- |
 | `companies` | Members read it; Owners and Admins update the profile fields (`name`, `legal_name`, `tax_id`, `email`, `phone`, `address`, `timezone`, `currency`). `updated_at` (microseconds) drives optimistic concurrency (CW-7). |
-| `company_memberships` | My Companies reads the user's active rows. Adding a member inserts a row (`role` admin, manager or cashier; `status` active). Changes update `role` or `status`. Rows are never deleted (CW-5). The one-owner index and the role check stay in force. |
+| `company_memberships` | My Companies reads the user's active rows. Adding a member inserts a row (`role` admin, manager or cashier; `status` active; `branch_scope` from the role, BM-4). Changes update `role` or `status`. Rows are never deleted (CW-5). The one-owner index and the role check stay in force. `branch_scope` is changed by [branch management](../branch-management/erd.md). |
 | `audit_logs` | `company.member_added`, `company.member_role_changed`, `company.member_deactivated`, `company.member_reactivated` (subject: the membership) and `company.updated` (subject: the company), all with `company_id`. |
 
 ## Permissions

@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 /**
  * A company's full profile for the platform detail page. Expects `ownerMembership.user` and
- * `creator` loaded and `members_count` selected.
+ * `creator` loaded and `members_count` and `branches_count` selected (Company::loadDetail()).
  *
  * @mixin Company
  */
@@ -31,6 +31,7 @@ class AdminCompanyDetailResource extends AdminCompanyResource
             'address' => $this->address,
             'timezone' => $this->timezone,
             'currency' => $this->currency,
+            'branches_count' => (int) ($this->branches_count ?? 0),
             'suspended_at' => $this->suspended_at?->toIso8601String(),
             'suspension_reason' => $this->suspension_reason,
             'created_by' => $this->creator ? ['id' => $this->creator->id, 'name' => $this->creator->name] : null,

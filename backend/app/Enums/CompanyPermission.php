@@ -11,4 +11,7 @@ enum CompanyPermission: string
     case ViewCompany = 'view-company';
     case ManageCompany = 'manage-company';
     case ManageMembers = 'manage-members';
+    case ViewBranches = 'view-branches';
+    case ManageBranches = 'manage-branches';
+    case ManageBranchAccess = 'manage-branch-access';
 }

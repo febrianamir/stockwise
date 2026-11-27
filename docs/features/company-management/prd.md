@@ -17,8 +17,8 @@ It is a **platform** feature. It is different from the later **Company Managemen
 | --- | --- | --- |
 | Platform company management (this PRD) | Superadmin | Tenants: existence, owner, status, profile |
 | [Platform user management](../user-management/prd.md) | Superadmin | Global user accounts |
-| Company management (later) | Owner and authorised roles | Members, roles, company settings |
-| Branch management (later) | Owner and authorised roles | Branches and branch access |
+| [Company workspace](../company-workspace/prd.md) | Owner and Admins | Members, roles, company settings |
+| [Branch management](../branch-management/prd.md) | Owner and Admins | Branches and branch access |
 
 ## 2. Goals and non-goals
 
@@ -34,7 +34,7 @@ It is a **platform** feature. It is different from the later **Company Managemen
 
 - Billing, plans, trials; company self-sign-up.
 - Adding, removing or changing members and roles (later Company Management). Members are **read-only** here.
-- Branches: no Branches tab, branch count or branch endpoints until Branch Management.
+- Managing branches. Superadmins only read them on a **Branches** tab ([branch management](../branch-management/prd.md) §8.5); Owners and Admins manage them in the workspace (CM-15).
 - Hard deletion (CM-9), a `closed`/archived status, impersonation, data export.
 
 ## 3. Decisions
@@ -152,6 +152,7 @@ Base `/api/v1/admin`, middleware `auth:sanctum`, `verified`, `can:administer-pla
 | `POST /companies/{company}/transfer-ownership` | `user_id`, `reason` | `200` `{ data: AdminCompanyDetail }` |
 | `GET /companies/{company}/members` | `page`, `search` (name or email), `eligible_owner` (only active members with an active account who aren't the owner) | `200` paginated `CompanyMember[]` |
 | `GET /companies/{company}/activity` | `page`, `per_page` | `200` paginated `CompanyActivity[]` |
+| `GET /companies/{company}/branches` | `page` | `200` paginated `Branch[]`, read-only ([branch management](../branch-management/prd.md) §9) |
 
 `AdminCompany`:
 
@@ -193,7 +194,7 @@ Company-scoped modules live under `/api/v1/companies/{company}/…` behind `comp
 | --- | --- |
 | `/admin/companies` | List, search, filters, stats |
 | `/admin/companies/new` | Create a company with an owner |
-| `/admin/companies/:companyId` | Details with Overview, Members and Activity tabs, and the actions |
+| `/admin/companies/:companyId` | Details with Overview, Members, Branches (read-only) and Activity tabs, and the actions |
 | `/admin/companies/:companyId/edit` | Edit the profile |
 
 All are Superadmin-only (others see the not-found page) and appear as "Companies" in the sidebar's Platform Admin group. Status badges: Active → `success`, Suspended → `destructive`.
@@ -225,7 +226,7 @@ All are Superadmin-only (others see the not-found page) and appear as "Companies
 
 - [x] List, search, filters, sorting and pagination work and are kept in the URL.
 - [x] Create, edit (with stale handling), suspend (type-to-confirm), reactivate and transfer work with feedback.
-- [x] Members and Activity tabs show the read-only data.
+- [x] Members, Branches and Activity tabs show the read-only data; activity names the member or branch an entry is about.
 - [x] Only Superadmins see the Companies nav item and pages.
 - [x] Verified in the browser on desktop and mobile with no console errors.
 
@@ -233,5 +234,5 @@ All are Superadmin-only (others see the not-found page) and appear as "Companies
 
 1. **Read-only suspension.** Should a suspended company's owner be able to read or export data instead of being fully blocked?
 2. **Closing a business.** Is a `closed`/archived status needed for businesses that stop permanently (data retention)?
-3. **Per-branch timezone.** Branches in different Indonesian time zones may need their own timezone when Branch Management arrives.
+3. ~~**Per-branch timezone.**~~ Answered: a branch may set its own timezone; without one it uses the company's ([branch management](../branch-management/prd.md) BM-9).
 4. **Fallback role on transfer.** The previous owner becomes `admin`. Should the Superadmin be able to choose the role (or remove the membership) once member management exists?

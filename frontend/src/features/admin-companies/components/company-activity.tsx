@@ -5,7 +5,8 @@ import { ListPagination } from '@/components/list-pagination'
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { adminCompanyQueries, type CompanyActivity as CompanyActivityEntry } from '@/lib/api'
+import { adminCompanyQueries, type BranchAccessSnapshot, type CompanyActivity as CompanyActivityEntry } from '@/lib/api'
+import { BRANCH_TYPE_LABELS, describeBranchAccess } from '@/lib/branch'
 import { formatDateTime } from '@/lib/format'
 import { ROLE_LABELS } from '@/lib/company'
 import { COMPANY_ACTIVITY_LABELS, FIELD_LABELS } from '../format'
@@ -54,6 +55,11 @@ export function CompanyActivity({ companyId }: { companyId: string }) {
               {entry.actor && <> · by {entry.actor.name}</>}
             </span>
             {entry.member && <span className="text-muted-foreground">Member: {entry.member.name}</span>}
+            {entry.branch && (
+              <span className="text-muted-foreground">
+                Branch: {entry.branch.name} <span className="font-mono text-xs">({entry.branch.code})</span>
+              </span>
+            )}
             <ActivityDetails entry={entry} />
           </li>
         ))}
@@ -63,12 +69,21 @@ export function CompanyActivity({ companyId }: { companyId: string }) {
   )
 }
 
-/** Role values are shown with their labels ("Admin"), everything else as stored. */
-function formatValue(field: string, value: string | null): string {
+/**
+ * Role and branch type values are shown with their labels ("Admin", "Warehouse"), branch access
+ * as a summary ("GOW, MKS"), and everything else as stored.
+ */
+function formatValue(field: string, value: string | BranchAccessSnapshot | null): string {
   if (value === null || value === '') {
     return '—'
   }
-  return field === 'role' ? (ROLE_LABELS[value as keyof typeof ROLE_LABELS] ?? value) : value
+  if (typeof value !== 'string') {
+    return describeBranchAccess(value)
+  }
+  if (field === 'role') {
+    return ROLE_LABELS[value as keyof typeof ROLE_LABELS] ?? value
+  }
+  return field === 'type' ? (BRANCH_TYPE_LABELS[value as keyof typeof BRANCH_TYPE_LABELS] ?? value) : value
 }
 
 function ActivityDetails({ entry }: { entry: CompanyActivityEntry }) {

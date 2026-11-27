@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\EnsureBranchAccess;
+use App\Http\Middleware\EnsureBranchActive;
 use App\Http\Middleware\EnsureCompanyMember;
 use App\Http\Middleware\EnsureCompanyPermission;
 use Illuminate\Foundation\Application;
@@ -20,6 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'company.member' => EnsureCompanyMember::class,
             'company.can' => EnsureCompanyPermission::class,
+            'company.branch' => EnsureBranchAccess::class,
+            'branch.active' => EnsureBranchActive::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

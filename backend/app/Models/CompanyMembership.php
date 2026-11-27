@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BranchScope;
 use App\Enums\CompanyPermission;
 use App\Enums\MembershipRole;
 use App\Enums\MembershipStatus;
@@ -10,12 +11,16 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * Links a global user to a company with a role (business rules §2.5). Exactly one `owner` per
- * company, enforced by a partial unique index (CM-3).
+ * company, enforced by a partial unique index (CM-3). `branch_scope` says which branches the
+ * member may work in (BM-3). Code that creates a membership sets it from
+ * MembershipRole::defaultBranchScope() (BM-4); the column defaults to `selected`, the safe side.
+ * Afterwards it's changed only through App\Services\BranchAccessService.
  */
-#[Fillable(['company_id', 'user_id', 'role', 'status'])]
+#[Fillable(['company_id', 'user_id', 'role', 'status', 'branch_scope'])]
 class CompanyMembership extends Model
 {
     /** @use HasFactory<CompanyMembershipFactory> */
@@ -38,6 +43,7 @@ class CompanyMembership extends Model
         return [
             'role' => MembershipRole::class,
             'status' => MembershipStatus::class,
+            'branch_scope' => BranchScope::class,
         ];
     }
 
@@ -78,5 +84,15 @@ class CompanyMembership extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Branches granted explicitly. Only used when `branch_scope` is `selected` (BM-3).
+     *
+     * @return BelongsToMany<Branch, $this>
+     */
+    public function branches(): BelongsToMany
+    {
+        return $this->belongsToMany(Branch::class, 'membership_branch_access', 'membership_id', 'branch_id');
     }
 }

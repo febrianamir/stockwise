@@ -12,6 +12,13 @@ export type {
   ApiErrorBody,
   ApiResource,
   AuthResponse,
+  Branch,
+  BranchAccess,
+  BranchAccessSnapshot,
+  BranchScope,
+  BranchStatus,
+  BranchSummary,
+  BranchType,
   Company,
   CompanyActivity,
   CompanyMember,
@@ -29,5 +36,6 @@ export type {
 export * from './admin-companies'
 export * from './admin-users'
 export * from './auth'
+export * from './branches'
 export * from './companies'
 export * from './users'

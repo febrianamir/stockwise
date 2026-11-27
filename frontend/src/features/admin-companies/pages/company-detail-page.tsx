@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { NotFoundPage } from '@/features/not-found-page'
 import { adminCompanyQueries, type AdminCompanyDetail } from '@/lib/api'
 import { CompanyActivity } from '../components/company-activity'
+import { CompanyBranches } from '../components/company-branches'
 import { CompanyStatusBadge } from '@/components/company-badges'
 import { CompanyMembers } from '../components/company-members'
 import { CompanyOverview } from '../components/company-overview'
@@ -110,6 +111,7 @@ function CompanyDetail({ company }: { company: AdminCompanyDetail }) {
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="members">Members</TabsTrigger>
+          <TabsTrigger value="branches">Branches</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="pt-4">
@@ -117,6 +119,9 @@ function CompanyDetail({ company }: { company: AdminCompanyDetail }) {
         </TabsContent>
         <TabsContent value="members" className="pt-4">
           <CompanyMembers companyId={company.id} />
+        </TabsContent>
+        <TabsContent value="branches" className="pt-4">
+          <CompanyBranches companyId={company.id} />
         </TabsContent>
         <TabsContent value="activity" className="pt-4">
           <CompanyActivity companyId={company.id} />

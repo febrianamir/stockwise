@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\AuditAction;
+use App\Enums\BranchScope;
 use App\Enums\CompanyStatus;
 use App\Enums\MembershipRole;
 use App\Enums\MembershipStatus;
@@ -43,6 +44,7 @@ class CompanyService
                 'user_id' => $owner->getKey(),
                 'role' => MembershipRole::Owner,
                 'status' => MembershipStatus::Active,
+                'branch_scope' => MembershipRole::Owner->defaultBranchScope(),
             ]);
 
             $this->audit->record(AuditAction::CompanyCreated, $company, $actor, [
@@ -177,8 +179,10 @@ class CompanyService
 
             $previousRole = $target->role;
 
-            $currentOwner?->update(['role' => MembershipRole::Admin]);
-            $target->update(['role' => MembershipRole::Owner]);
+            // The previous owner keeps every branch as an Admin (BM-4); the new owner has implicit
+            // access (BR-3), and its stored scope is kept consistent.
+            $currentOwner?->forceFill(['role' => MembershipRole::Admin, 'branch_scope' => BranchScope::All])->save();
+            $target->forceFill(['role' => MembershipRole::Owner, 'branch_scope' => BranchScope::All])->save();
             $company->touch();
 
             $this->audit->record(AuditAction::CompanyOwnershipTransferred, $company, $actor, [

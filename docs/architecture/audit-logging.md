@@ -24,6 +24,7 @@ Audit actions that change access, ownership, money or stock, or that someone may
 - **Accounts:** `user.registered`, `user.created`, `user.email_verified`, `user.deactivated`, `user.reactivated`, `user.superadmin_granted`, `user.superadmin_revoked`.
 - **Companies:** `company.created`, `company.updated`, `company.suspended`, `company.reactivated`, `company.ownership_transferred`.
 - **Members:** `company.member_added`, `company.member_role_changed`, `company.member_deactivated`, `company.member_reactivated` (subject: the membership).
+- **Branches:** `branch.created`, `branch.updated`, `branch.deactivated`, `branch.reactivated` (subject: the branch) and `branch_access.updated` (subject: the membership).
 
 Logins are tracked on `users.last_login_at`, not audited row by row.
 
@@ -55,10 +56,11 @@ Keep it small and useful for a human reading the history:
 | Status changes | `previous_status` (and the new one if not implied) |
 | Ownership | `previous_owner_id`, `new_owner_id`, `previous_owner_role` |
 | Creation | the initial values that matter (e.g. `code`, `owner_id`) |
+| Branch access | `changes: { branch_access: { from: { scope, branches }, to: { scope, branches } } }`, with branch codes |
 
 Never store secrets (passwords, tokens, codes) in metadata.
 
 ## Reading the trail
 
 - A user's account activity: entries where the subject is that user (`AdminUserDetailResource`).
-- A company's activity: entries where `company_id` is that company (`GET /admin/companies/{id}/activity`), newest first, paginated.
+- A company's activity: entries where `company_id` is that company (`GET /admin/companies/{id}/activity`), newest first, paginated. Each entry names the member (membership subjects) or the branch (branch subjects) it was about.

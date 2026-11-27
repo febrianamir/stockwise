@@ -19,9 +19,11 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   // Desktop and mobile, as the UI Definition of Done requires (docs/design/ui-guidelines.md §16).
+  // `setup` signs the seeded users in once (e2e/auth.setup.ts) for specs that use their sessions.
   projects: [
-    { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
-    { name: 'mobile', use: { ...devices['Pixel 7'] } },
+    { name: 'setup', testMatch: /.*\.setup\.ts/ },
+    { name: 'desktop', use: { ...devices['Desktop Chrome'] }, dependencies: ['setup'] },
+    { name: 'mobile', use: { ...devices['Pixel 7'] }, dependencies: ['setup'] },
   ],
   // Starts the Vite dev server, or reuses one already running on port 5173. The backend is not
   // started here: specs tagged @backend need the API running (see the README).

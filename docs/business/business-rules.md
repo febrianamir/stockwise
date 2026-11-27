@@ -32,8 +32,8 @@ User ──< Company membership >── Company ──< Branch
 ```
 
 - A **user** joins a **company** through a **company membership**, which carries the user's role in that company.
-- A **company** owns one or more **branches** and zero or more **warehouses**. Together these are the company's **locations**.
-- **Branch access** and **warehouse access** link a membership to the locations that user may work in.
+- A **company** owns zero or more **branches** and **warehouses**. Together these are the company's **locations**. A warehouse is stored as a branch of type `warehouse` (§2.3).
+- **Branch access** links a membership to the locations that user may work in. Because warehouses are branches, the same access covers them.
 
 ### 2.1 Company (tenant)
 
@@ -64,6 +64,8 @@ A warehouse is a physical location owned by a company that stores stock and supp
 
 A warehouse may have its own inventory, employees and stock movements: receiving purchases from suppliers, transferring stock to branches or other warehouses, and stock adjustments.
 
+**Model.** A warehouse is a branch with `type = warehouse`: the same table, the same code and status rules, and the same access model ([branch management](../features/branch-management/prd.md)). The WH rules below apply to branches of that type. Later modules decide what a warehouse can't do, for example processing sales.
+
 Some resources are company-wide and others belong to a branch or warehouse. The scope of each resource is decided when its module is designed and recorded in [section 5](#5-resource-scope).
 
 ### 2.4 User
@@ -81,7 +83,7 @@ A company membership connects a user to a company and defines the user's role th
 
 ### 2.6 Branch and warehouse access
 
-A membership does not automatically give access to every location. Branch access and warehouse access list the locations a member may work in. The exception is the **Owner**, who has implicit access to every branch and warehouse of their company (BR-3).
+A membership does not automatically give access to every location. Each membership has a **branch scope**: `all` (every location, including ones added later) or `selected` (only the locations granted to it). The **Owner** has implicit access to every branch and warehouse of their company (BR-3), whatever is stored. New Admins start with `all` and can be restricted; new Managers and Cashiers start with `selected` and no locations until someone assigns them ([branch management](../features/branch-management/prd.md) BM-3, BM-4).
 
 | User | Company | Role | Location access |
 | --- | --- | --- | --- |
@@ -110,7 +112,7 @@ A membership does not automatically give access to every location. Branch access
 | BR-1 | A branch belongs to exactly one company. |
 | BR-2 | Branch codes are unique within a company. Different companies may reuse the same code. |
 | BR-3 | A user cannot access a branch without valid branch access. An Owner has implicit access to every branch of their company, including branches created later, without explicit branch-access records. |
-| BR-4 | An inactive branch cannot process normal sales or stock operations. |
+| BR-4 | An inactive branch cannot process normal sales or stock operations: those writes are rejected with `BRANCH_INACTIVE`. Its data stays readable, and members with "Manage branches" can still edit and reactivate it. Deactivation needs a reason and keeps location access (BM-6). |
 | BR-5 | Branch data is never exposed across company boundaries. |
 
 ### Warehouse
@@ -120,7 +122,7 @@ A membership does not automatically give access to every location. Branch access
 | WH-1 | A warehouse belongs to exactly one company. |
 | WH-2 | Warehouse codes are unique within a company. |
 | WH-3 | A user cannot access a warehouse without valid warehouse access. An Owner has implicit access to every warehouse of their company, as in BR-3. |
-| WH-4 | An inactive warehouse cannot process normal stock operations (receiving, transfers, adjustments). |
+| WH-4 | An inactive warehouse cannot process normal stock operations (receiving, transfers, adjustments), as for BR-4. |
 | WH-5 | Warehouse data is never exposed across company boundaries. |
 | WH-6 | Stock moves only between locations of the same company. |
 
@@ -161,7 +163,7 @@ Superadmin is a platform role held by Stockwise operators, stored as `users.is_s
 
 ### 4.2 Roles map to permissions
 
-These roles are a starting point, not the final permission model. Code checks **permissions** (for example "create sales"), not role names. The company permissions implemented so far are `view-company`, `manage-company` and `manage-members` ("Manage company" and "Manage users" below), in `App\Enums\MembershipRole::permissions()` ([company workspace](../features/company-workspace/prd.md)). Roles map to permissions so the model can grow, for example with custom roles, without rewriting authorisation checks.
+These roles are a starting point, not the final permission model. Code checks **permissions** (for example "create sales"), not role names. The company permissions implemented so far are `view-company`, `manage-company` and `manage-members` ("Manage company" and "Manage users" below, [company workspace](../features/company-workspace/prd.md)), and `view-branches`, `manage-branches` and `manage-branch-access` ("Manage branches and warehouses" and branch access, [branch management](../features/branch-management/prd.md)), in `App\Enums\MembershipRole::permissions()`. Roles map to permissions so the model can grow, for example with custom roles, without rewriting authorisation checks.
 
 **Exception: ownership invariants.** CO-1, MB-5 and MB-6, and the Owner's implicit location access (BR-3, WH-3), are about who is an Owner, not about what someone may do. They check the Owner role directly. No permission can stand in for ownership, because other roles such as Admin also hold broad permissions.
 
@@ -171,7 +173,9 @@ Initial mapping, to be refined when the permission system is designed:
 | --- | --- | --- | --- | --- |
 | View dashboard | ✓ | ✓ | ✓ | Limited |
 | Manage company | ✓ | ✓ | — | — |
-| Manage branches and warehouses | ✓ | ✓ | Assigned | — |
+| View branches and warehouses | ✓ | ✓ | Assigned | Assigned |
+| Manage branches and warehouses | ✓ | ✓ | — | — |
+| Manage branch access | ✓ | ✓ | — | — |
 | Manage users | ✓ | ✓ | — | — |
 | Manage products | ✓ | ✓ | ✓ | — |
 | View inventory | ✓ | ✓ | ✓ | Limited |
@@ -193,7 +197,8 @@ Each module decides whether its data is company-wide or belongs to a location. R
 | Products | Company-wide (suggested by the overview) | To be confirmed |
 | Suppliers | Company-wide (suggested by the overview) | To be confirmed |
 | Settings | Company-wide, possibly with location overrides | To be confirmed |
-| Employees | Company membership plus branch or warehouse access | To be confirmed |
+| Branches and warehouses | Company-owned locations; one table, `type` store or warehouse | Decided ([branch management](../features/branch-management/prd.md)) |
+| Employees | Company membership plus branch access (scope `all` or `selected`) | Decided ([branch management](../features/branch-management/prd.md)) |
 | Inventory | Per location: branch or warehouse | To be confirmed |
 | Stock movements | Per location; transfers link two locations of one company (WH-6) | To be confirmed |
 | Sales | Branch-specific | To be confirmed |
@@ -205,11 +210,11 @@ Each module decides whether its data is company-wide or belongs to a location. R
 Resolve these when the related feature is designed, then move the answer into the rules above.
 
 1. ~~**Superadmin inside company data.**~~ Answered: Superadmins manage companies through platform routes only and have no access to business data without a membership (§4.1, CM-12, CM-15).
-2. **Admin location access.** Does an Admin automatically have all branches and warehouses, like the Owner, or only assigned ones?
+2. ~~**Admin location access.**~~ Answered: Admins start with every location (scope `all`) but can be restricted; only the Owner's access is implicit and fixed (§2.6, BM-4).
 3. **"Limited" for Cashier.** What exactly can a cashier see on the dashboard, in inventory and in sales history? For example: only their own branch, only their own sales, only the current shift.
-4. **Inactive locations.** What does "normal operations" exclude for inactive branches and warehouses (BR-4, WH-4)? Is data still readable? Who can reactivate? (Answered for companies by CO-6: suspension blocks everything; a Superadmin reactivates.)
-5. **Critical actions.** Which actions go to the audit trail (SEC-5)? Already recorded: user registration, creation, email verification, deactivation, reactivation and Superadmin changes; company creation, edits, suspension, reactivation and ownership transfers; members added, role changes, deactivation and reactivation ([audit logging](../architecture/audit-logging.md)). Remaining candidates: location access changes, inventory adjustments, stock transfers, voided or refunded sales, price changes, and branch and warehouse deactivation.
+4. ~~**Inactive locations.**~~ Answered: operational writes are rejected, data stays readable, and members with "Manage branches" reactivate (BR-4, WH-4, BM-6). For companies, CO-6: suspension blocks everything and a Superadmin reactivates.
+5. **Critical actions.** Which actions go to the audit trail (SEC-5)? Already recorded: user registration, creation, email verification, deactivation, reactivation and Superadmin changes; company creation, edits, suspension, reactivation and ownership transfers; members added, role changes, deactivation and reactivation; branch creation, edits, deactivation and reactivation, and branch access changes ([audit logging](../architecture/audit-logging.md)). Remaining candidates: inventory adjustments, stock transfers, voided or refunded sales and price changes.
 6. ~~**Response to out-of-scope IDs.**~~ Answered: company-scoped routes return `404` to non-members (SEC-4). Platform (`/admin`) routes return `403` to non-Superadmins without looking records up.
 7. **Roles per membership.** Does a membership hold exactly one role, or can a user hold several roles in one company?
-8. **Active location context.** The company is in the URL (`/api/v1/companies/{company}/…`, see [tenancy](../architecture/tenancy.md)). How does a request say which branch or warehouse it acts in?
-9. **Warehouse model.** Is a warehouse its own entity or a branch with a "warehouse" type? Can a warehouse ever process sales, and can a branch keep backroom stock that acts like a warehouse?
+8. ~~**Active location context.**~~ Answered: in the URL as well, `/api/v1/companies/{company}/branches/{branch}/…`, resolved and authorised by the `company.branch` middleware ([tenancy](../architecture/tenancy.md), BM-10).
+9. ~~**Warehouse model.**~~ Answered: a warehouse is a branch with `type = warehouse` (§2.3). Still open for the sales and stock modules: whether a warehouse can ever process sales, and whether a store can keep backroom stock that acts like a warehouse.

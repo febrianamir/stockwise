@@ -42,6 +42,23 @@ export const router = createBrowserRouter([
             path: '/companies/:companyId/edit',
             lazy: async () => ({ Component: (await import('@/features/companies/pages/company-edit-page')).CompanyEditPage }),
           },
+          // Branch management (docs/features/branch-management/prd.md §8). Access is checked by the API.
+          {
+            path: '/companies/:companyId/branches',
+            lazy: async () => ({ Component: (await import('@/features/branches/pages/branches-page')).BranchesPage }),
+          },
+          {
+            path: '/companies/:companyId/branches/new',
+            lazy: async () => ({ Component: (await import('@/features/branches/pages/branch-new-page')).BranchNewPage }),
+          },
+          {
+            path: '/companies/:companyId/branches/:branchId',
+            lazy: async () => ({ Component: (await import('@/features/branches/pages/branch-detail-page')).BranchDetailPage }),
+          },
+          {
+            path: '/companies/:companyId/branches/:branchId/edit',
+            lazy: async () => ({ Component: (await import('@/features/branches/pages/branch-edit-page')).BranchEditPage }),
+          },
           {
             // Platform user management, Superadmin only (docs/features/user-management/prd.md §8).
             lazy: async () => ({

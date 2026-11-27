@@ -2,7 +2,7 @@
 
 Stockwise is a point-of-sale (POS) system built for businesses that operate across **multiple stores, warehouses, and cashiers**. It aims to give owners a single place to manage sales at the counter, track stock across every location, and control who can do what at each store.
 
-> **Status:** early development. User authentication, platform user management, platform company management and the company workspace (members) are done. Branches and POS features are next.
+> **Status:** early development. User authentication, platform user management, platform company management, the company workspace (members) and branch management are done. Products and POS features are next.
 
 ## Features
 
@@ -11,7 +11,8 @@ Stockwise is a point-of-sale (POS) system built for businesses that operate acro
 | User authentication: register, email verification with a 6-digit code, log in and out, profile, change and recover password | [PRD](docs/features/auth/prd.md) · [ERD](docs/features/auth/erd.md) |
 | Platform user management (Superadmin, at `/admin/users`): search, filter and inspect all users, create users, deactivate and reactivate accounts, grant or revoke Superadmin, audit log | [PRD](docs/features/user-management/prd.md) · [ERD](docs/features/user-management/erd.md) |
 | Company workspace (members, at `/companies`): My Companies, view a company and its members; Owners and Admins edit the company and add, change and deactivate members | [PRD](docs/features/company-workspace/prd.md) · [ERD](docs/features/company-workspace/erd.md) |
-| Platform company management (Superadmin, at `/admin/companies`): create companies with an owner, search and filter, edit, suspend and reactivate, transfer ownership, members and activity; tenant gate for company-scoped routes | [PRD](docs/features/company-management/prd.md) · [ERD](docs/features/company-management/erd.md) |
+| Platform company management (Superadmin, at `/admin/companies`): create companies with an owner, search and filter, edit, suspend and reactivate, transfer ownership, members, branches and activity; tenant gate for company-scoped routes | [PRD](docs/features/company-management/prd.md) · [ERD](docs/features/company-management/erd.md) |
+| Branch management (at `/companies/:id/branches`): stores and warehouses; Owners and Admins create, edit, deactivate and reactivate them and choose which branches each member can work in; branch gate for branch-scoped routes | [PRD](docs/features/branch-management/prd.md) · [ERD](docs/features/branch-management/erd.md) |
 
 ## Tech stack
 
@@ -69,8 +70,10 @@ This creates the `stockwise` database (used by the app) and `stockwise_test` (us
 ```bash
 cd backend
 composer run setup      # installs dependencies, creates .env, generates the app key and runs migrations
-php artisan db:seed     # optional: creates the Superadmin (SUPERADMIN_* in .env), a test user (test@example.com / password)
-                        # and a "Demo Retail" company it owns, with an admin member (demo-admin@example.com / password)
+php artisan db:seed     # optional, safe to re-run: creates the Superadmin (SUPERADMIN_* in .env), a test user
+                        # (test@example.com / password) and a "Demo Retail" company it owns, with three branches
+                        # (Makassar Store, Gowa Store, Central Warehouse), an admin (demo-admin@example.com) and a
+                        # cashier who can only work in Gowa Store (demo-cashier@example.com), both with password "password"
 composer run dev        # starts the API server, queue worker (sends emails), and log tail
 ```
 
@@ -140,7 +143,7 @@ npm run test:e2e:ui                    # interactive UI mode (watch, time-travel
 npm run test:e2e:report                # open the HTML report of the last run
 ```
 
-Specs tagged `@backend` drive the real API, so they need the services and the backend running (steps 1 and 2 above) with seeded data (`php artisan db:seed`). Playwright doesn't start the backend. Every test fails if the page logs a console error or throws an uncaught exception. Set `PLAYWRIGHT_BASE_URL` to run against an app that's already deployed, without starting the dev server. Results go to `frontend/test-results/` and `frontend/playwright-report/`, which git ignores.
+Specs tagged `@backend` drive the real API, so they need the services and the backend running (steps 1 and 2 above) with seeded data (`php artisan db:seed`). Playwright doesn't start the backend. A `setup` project signs the seeded users in once per run and saves their sessions in `frontend/e2e/.auth/` (git ignores it), because the API allows 5 logins a minute per account. Set `E2E_API_URL` if the API isn't at `http://localhost:8000/api/v1`. The branch specs create "E2E Store …" branches in Demo Retail on each run; branches can't be deleted, so use a disposable database if you run them often. Every test fails if the page logs a console error or throws an uncaught exception. Set `PLAYWRIGHT_BASE_URL` to run against an app that's already deployed, without starting the dev server. Results go to `frontend/test-results/` and `frontend/playwright-report/`, which git ignores.
 
 ## Contributing
 

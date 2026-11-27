@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Ellipsis, RefreshCw, RotateCcw, UserPlus, UserX } from 'lucide-react'
+import { Ellipsis, MapPinned, RefreshCw, RotateCcw, UserPlus, UserX } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/confirm-dialog'
@@ -20,6 +20,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { MembershipStatusBadge, OwnerBadge } from '@/components/company-badges'
+import { BRANCH_SCOPE_LABELS } from '@/lib/branch'
 import { ROLE_LABELS } from '@/lib/company'
 import { useCurrentUser } from '@/features/auth/use-current-user'
 import { companyQueries, type Company, type CompanyMember } from '@/lib/api'
@@ -28,18 +29,26 @@ import { canInCompany } from '../permissions'
 import { ASSIGNABLE_ROLES } from '../roles'
 import { useUpdateMember } from '../use-company-actions'
 import { AddMemberDialog } from './add-member-dialog'
+import { MemberBranchAccessDialog } from './member-branch-access-dialog'
 
-/** Members card: everyone can view; Owners and Admins add and change members (CW-1, CW-3, CW-4). */
+/**
+ * Members card: everyone can view; Owners and Admins add and change members (CW-1, CW-3, CW-4)
+ * and set their branch access (BM-5).
+ */
 export function CompanyMembersSection({ company }: { company: Company }) {
   const [page, setPage] = useState(1)
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [deactivating, setDeactivating] = useState<CompanyMember | null>(null)
+  const [editingAccess, setEditingAccess] = useState<CompanyMember | null>(null)
   const { data, error, isPending, isFetching, refetch } = useQuery(companyQueries.members(company.id, page))
   const { data: currentUser } = useCurrentUser()
   const updateMember = useUpdateMember(company.id)
   const canManage = canInCompany(company, 'manage-members')
+  const canManageAccess = canInCompany(company, 'manage-branch-access')
+  const hasActions = canManage || canManageAccess
 
-  const canChange = (member: CompanyMember) => canManage && !member.is_owner && member.user.id !== currentUser?.id
+  // Nobody changes the owner's membership or their own (CW-4, BM-5).
+  const canChange = (member: CompanyMember) => hasActions && !member.is_owner && member.user.id !== currentUser?.id
 
   // Role changes and reactivation run from the menu without a dialog, so failures go to a toast.
   const onInlineError = { onError: (error: Error) => toast.error(error.message || "Couldn't update this member.") }
@@ -88,8 +97,9 @@ export function CompanyMembersSection({ company }: { company: Company }) {
                     <TableHead>Member</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Branches</TableHead>
                     <TableHead>Joined At</TableHead>
-                    {canManage && (
+                    {hasActions && (
                       <TableHead className="w-12 text-right">
                         <span className="sr-only">Actions</span>
                       </TableHead>
@@ -100,7 +110,7 @@ export function CompanyMembersSection({ company }: { company: Company }) {
                   {isPending
                     ? Array.from({ length: 3 }, (_, index) => (
                         <TableRow key={index}>
-                          <TableCell colSpan={canManage ? 5 : 4}>
+                          <TableCell colSpan={hasActions ? 6 : 5}>
                             <Skeleton className="h-6 w-full" />
                           </TableCell>
                         </TableRow>
@@ -123,15 +133,19 @@ export function CompanyMembersSection({ company }: { company: Company }) {
                           <TableCell>
                             <MembershipStatusBadge status={member.status} />
                           </TableCell>
+                          <TableCell className="text-muted-foreground">{BRANCH_SCOPE_LABELS[member.branch_scope]}</TableCell>
                           <TableCell className="tabular-nums">{formatDate(member.joined_at)}</TableCell>
-                          {canManage && (
+                          {hasActions && (
                             <TableCell className="text-right">
                               {canChange(member) && (
                                 <MemberActions
                                   member={member}
+                                  canManageMembers={canManage}
+                                  canManageAccess={canManageAccess}
                                   onRoleChange={(role) => changeRole(member, role)}
                                   onReactivate={() => reactivate(member)}
                                   onDeactivate={() => startDeactivate(member)}
+                                  onBranchAccess={() => setEditingAccess(member)}
                                 />
                               )}
                             </TableCell>
@@ -162,14 +176,18 @@ export function CompanyMembersSection({ company }: { company: Company }) {
                           {member.is_owner ? <OwnerBadge /> : <span>{ROLE_LABELS[member.role]}</span>}
                           <MembershipStatusBadge status={member.status} />
                         </div>
+                        <span className="text-xs text-muted-foreground">{BRANCH_SCOPE_LABELS[member.branch_scope]}</span>
                         <span className="text-xs text-muted-foreground tabular-nums">Joined {formatDate(member.joined_at)}</span>
                       </div>
                       {canChange(member) && (
                         <MemberActions
                           member={member}
+                          canManageMembers={canManage}
+                          canManageAccess={canManageAccess}
                           onRoleChange={(role) => changeRole(member, role)}
                           onReactivate={() => reactivate(member)}
                           onDeactivate={() => startDeactivate(member)}
+                          onBranchAccess={() => setEditingAccess(member)}
                         />
                       )}
                     </li>
@@ -181,6 +199,7 @@ export function CompanyMembersSection({ company }: { company: Company }) {
       </CardContent>
 
       {canManage && <AddMemberDialog companyId={company.id} open={isAddOpen} onOpenChange={setIsAddOpen} />}
+      {canManageAccess && <MemberBranchAccessDialog companyId={company.id} member={editingAccess} onClose={() => setEditingAccess(null)} />}
       <ConfirmDialog
         open={deactivating !== null}
         onOpenChange={(open) => {
@@ -210,22 +229,35 @@ export function CompanyMembersSection({ company }: { company: Company }) {
 
 function MemberActions({
   member,
+  canManageMembers,
+  canManageAccess,
   onRoleChange,
   onReactivate,
   onDeactivate,
+  onBranchAccess,
 }: {
   member: CompanyMember
+  canManageMembers: boolean
+  canManageAccess: boolean
   onRoleChange: (role: (typeof ASSIGNABLE_ROLES)[number]['value']) => void
   onReactivate: () => void
   onDeactivate: () => void
+  onBranchAccess: () => void
 }) {
+  const isActive = member.status === 'active'
+
+  // An inactive member with only branch-access rights would get an empty menu.
+  if (!canManageMembers && !isActive) {
+    return null
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label={`Actions for ${member.user.name}`} />}>
         <Ellipsis aria-hidden="true" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        {member.status === 'active' && (
+        {isActive && canManageMembers && (
           <>
             <DropdownMenuGroup>
               <DropdownMenuLabel>Change Role</DropdownMenuLabel>
@@ -236,13 +268,21 @@ function MemberActions({
               ))}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onClick={onDeactivate}>
-              <UserX aria-hidden="true" />
-              Deactivate
-            </DropdownMenuItem>
           </>
         )}
-        {member.status === 'inactive' && (
+        {isActive && canManageAccess && (
+          <DropdownMenuItem onClick={onBranchAccess}>
+            <MapPinned aria-hidden="true" />
+            Branch Access
+          </DropdownMenuItem>
+        )}
+        {isActive && canManageMembers && (
+          <DropdownMenuItem variant="destructive" onClick={onDeactivate}>
+            <UserX aria-hidden="true" />
+            Deactivate
+          </DropdownMenuItem>
+        )}
+        {!isActive && canManageMembers && (
           <DropdownMenuItem onClick={onReactivate}>
             <RotateCcw aria-hidden="true" />
             Reactivate

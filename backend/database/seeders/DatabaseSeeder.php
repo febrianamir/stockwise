@@ -19,10 +19,13 @@ class DatabaseSeeder extends Seeder
 
         $this->call(SuperadminSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // Safe to run again: the test user is only created once.
+        if (! User::query()->where('email', 'test@example.com')->exists()) {
+            User::factory()->create([
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+            ]);
+        }
 
         $this->call(CompanySeeder::class);
     }

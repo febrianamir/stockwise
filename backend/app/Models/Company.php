@@ -88,7 +88,7 @@ class Company extends Model
     public function loadDetail(): static
     {
         return $this->load(['ownerMembership.user', 'creator'])
-            ->loadCount(['memberships as members_count' => fn (Builder $memberships) => $memberships->where('status', MembershipStatus::Active)]);
+            ->loadCount(['memberships as members_count' => fn (Builder $memberships) => $memberships->where('status', MembershipStatus::Active), 'branches']);
     }
 
     public function isSuspended(): bool
@@ -102,6 +102,14 @@ class Company extends Model
     public function memberships(): HasMany
     {
         return $this->hasMany(CompanyMembership::class);
+    }
+
+    /**
+     * @return HasMany<Branch, $this>
+     */
+    public function branches(): HasMany
+    {
+        return $this->hasMany(Branch::class);
     }
 
     /**

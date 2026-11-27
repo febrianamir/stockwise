@@ -32,6 +32,8 @@ class CompanyMemberResource extends JsonResource
             'role' => $this->role->value,
             'status' => $this->status->value,
             'is_owner' => $this->isOwner(),
+            // The Owner reaches every branch whatever is stored (BR-3, BM-3).
+            'branch_scope' => $this->isOwner() ? 'all' : $this->branch_scope->value,
             'joined_at' => $this->created_at?->toIso8601String(),
         ];
     }

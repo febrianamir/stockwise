@@ -23,4 +23,9 @@ enum AuditAction: string
     case CompanyMemberRoleChanged = 'company.member_role_changed';
     case CompanyMemberDeactivated = 'company.member_deactivated';
     case CompanyMemberReactivated = 'company.member_reactivated';
+    case BranchCreated = 'branch.created';
+    case BranchUpdated = 'branch.updated';
+    case BranchDeactivated = 'branch.deactivated';
+    case BranchReactivated = 'branch.reactivated';
+    case BranchAccessUpdated = 'branch_access.updated';
 }

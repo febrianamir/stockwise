@@ -9,7 +9,8 @@ The backend is a Laravel JSON API consumed by the React app through the client i
 | `/api/v1/auth/…` | Guests and users (authentication) | `POST /api/v1/auth/login` |
 | `/api/v1/user…` | The logged-in user's own account | `PATCH /api/v1/user` |
 | `/api/v1/admin/…` | Platform administration, Superadmins only | `GET /api/v1/admin/companies` |
-| `/api/v1/companies/{company}/…` | Company-scoped (tenant) routes, see [tenancy.md](tenancy.md) | future modules |
+| `/api/v1/companies/{company}/…` | Company-scoped (tenant) routes, see [tenancy.md](tenancy.md) | `GET /api/v1/companies/{company}/branches` |
+| `/api/v1/companies/{company}/branches/{branch}/…` | Branch-scoped routes, see [tenancy.md](tenancy.md#branch-context) | `GET …/branches/{branch}/members` |
 
 - Every route is under `/api/v1`. A breaking change to a response goes to `/api/v2` for that resource; additive changes (new fields, new optional parameters) stay in `v1`.
 - Route names follow the prefix: `api.v1.admin.companies.index`.
@@ -45,6 +46,8 @@ Errors use Laravel's shape, with an optional machine-readable `code`:
 | Code | Status | Meaning |
 | --- | --- | --- |
 | `COMPANY_SUSPENDED` | 403 | The company is suspended; company-scoped requests are blocked (CM-5) |
+| `BRANCH_ACCESS_DENIED` | 403 | The member can't work in this branch of their company (BR-3, BM-10) |
+| `BRANCH_INACTIVE` | 403 | A write in an inactive branch on an operational route (BR-4, BM-6) |
 | `INVALID_STATUS_TRANSITION` | 409 | The record is not in the state the action requires, e.g. suspending a suspended company |
 | `STALE_RECORD` | 409 | The record changed since the client loaded it (see optimistic concurrency) |
 
@@ -53,7 +56,7 @@ Add new codes here when you introduce them. The frontend reads them with `ApiErr
 | Status | When |
 | --- | --- |
 | `401` | Not authenticated |
-| `403` | Authenticated but not allowed (including `COMPANY_SUSPENDED`) |
+| `403` | Authenticated but not allowed (including `COMPANY_SUSPENDED`, `BRANCH_ACCESS_DENIED`, `BRANCH_INACTIVE`) |
 | `404` | Not found, or not visible to this user on tenant routes (SEC-4) |
 | `409` | Conflict with the current state (`code` says which) |
 | `422` | Validation failure or a business safeguard |
@@ -74,7 +77,7 @@ Add new codes here when you introduce them. The frontend reads them with `ApiErr
 
 ## Optimistic concurrency
 
-Edit endpoints for records that several people may change send the `updated_at` the client loaded. The service locks the row and compares it; if it differs, it returns `409 STALE_RECORD` and changes nothing. The client offers to reload. Used by `PATCH /admin/companies/{id}`.
+Edit endpoints for records that several people may change send the `updated_at` the client loaded. The service locks the row and compares it; if it differs, it returns `409 STALE_RECORD` and changes nothing. The client offers to reload. Used by `PATCH /admin/companies/{id}`, `PATCH /companies/{company}` and `PATCH /companies/{company}/branches/{branch}`.
 
 Tables that use this store `updated_at` with microseconds (`timestamps(6)`, model `$dateFormat = 'Y-m-d H:i:s.u'`) and resources return it with microseconds (`format('Y-m-d\TH:i:s.uP')`). Second precision would miss two edits within the same second.
 
