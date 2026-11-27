@@ -20,7 +20,7 @@ Stockwise is a point-of-sale (POS) system built for businesses that operate acro
 | `backend/` | Laravel 13 (PHP 8.3+) REST API, Laravel Sanctum (bearer tokens), PHPUnit, Laravel Pint, Laravel Boost |
 | Database | PostgreSQL 18 (Docker Compose for local dev) |
 | Email (local) | Mailpit (Docker Compose), which catches all outgoing email |
-| `frontend/` | React 19, Vite, TypeScript, Tailwind CSS v4, shadcn/ui (Base UI), Lucide icons, TanStack Query, React Router, Oxlint |
+| `frontend/` | React 19, Vite, TypeScript, Tailwind CSS v4, shadcn/ui (Base UI), Lucide icons, TanStack Query, React Router, Oxlint, Playwright (end-to-end tests) |
 
 The frontend talks to the backend over a versioned JSON API at `/api/v1`, through a central client in `frontend/src/lib/api/`, with TanStack Query handling caching, refetching and request state.
 
@@ -121,6 +121,26 @@ cd frontend
 npm run lint
 npm run build              # type-checks (tsc -b) and builds
 ```
+
+### End-to-end tests (Playwright)
+
+The frontend has browser tests in `frontend/e2e/`, run with [Playwright](https://playwright.dev) on Chromium in a desktop and a mobile (Pixel 7) viewport. Install the browser once, after `npm install`:
+
+```bash
+cd frontend
+npx playwright install chromium        # on a fresh Linux machine: npx playwright install --with-deps chromium
+```
+
+Then:
+
+```bash
+npm run test:e2e                       # all specs; starts the Vite dev server, or reuses one on :5173
+npx playwright test --grep-invert @backend   # only the specs that don't need the API
+npm run test:e2e:ui                    # interactive UI mode (watch, time-travel debugging)
+npm run test:e2e:report                # open the HTML report of the last run
+```
+
+Specs tagged `@backend` drive the real API, so they need the services and the backend running (steps 1 and 2 above) with seeded data (`php artisan db:seed`). Playwright doesn't start the backend. Every test fails if the page logs a console error or throws an uncaught exception. Set `PLAYWRIGHT_BASE_URL` to run against an app that's already deployed, without starting the dev server. Results go to `frontend/test-results/` and `frontend/playwright-report/`, which git ignores.
 
 ## Contributing
 

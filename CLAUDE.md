@@ -59,7 +59,7 @@ These are auto-imported by `frontend/CLAUDE.md`, but read them explicitly when s
 
 Rules:
 - For visual and UX decisions, the design documents are the source of truth. If they conflict with existing code or with the conventions below, point out the conflict and ask before deviating. Don't silently pick one.
-- Follow the agent workflow and Definition of Done in `ui-guidelines.md` §15–16. A UI task is not complete just because it compiles: verify it in the browser (desktop and mobile, interactions, console errors), or state clearly that browser verification was not done.
+- Follow the agent workflow and Definition of Done in `ui-guidelines.md` §15–16. A UI task is not complete just because it compiles: verify it in the browser (desktop and mobile, interactions, console errors), with Playwright (see "Frontend end-to-end tests" below), or state clearly that browser verification was not done.
 - When a page has its own spec in `docs/design/`, read it before implementing that page.
 - When a design decision changes intentionally, update the relevant design document in the same piece of work.
 
@@ -102,6 +102,17 @@ Known overrides:
 - Routing: React Router (library mode). Routes are defined in `src/router.tsx` and every page is lazy-loaded with route `lazy`. Guard routes with `RequireAuth` / `RequireGuest` from `src/features/auth/components/route-guards.tsx`.
 - Auth: Sanctum bearer token in `authToken` (observable). Read the session with `useCurrentUser()` and never read `localStorage` directly. Business routes in the backend must use the `verified` middleware (`AUTH-14`).
 - Verify with `npm run lint` and `npm run build` (runs `tsc -b`).
+
+### Frontend end-to-end tests (Playwright)
+
+Playwright (`@playwright/test`, Chromium) is the project's browser testing tool. Use it for end-to-end tests and for the browser verification that `ui-guidelines.md` §15–16 requires.
+
+- Specs live in `frontend/e2e/*.spec.ts`, configured by `frontend/playwright.config.ts`. It has two projects, `desktop` (Desktop Chrome) and `mobile` (Pixel 7), and starts the Vite dev server or reuses one on port 5173.
+- Import `test` and `expect` from `./fixtures`, not from `@playwright/test`. The fixture fails a test on any console error or uncaught exception. Opt out only where an error is expected, with `test.use({ failOnConsoleError: false })` and a comment saying why. Seeded logins are in `seededUsers`.
+- Tag specs that need the real API with `@backend` (`test.describe('…', { tag: '@backend' }, …)`). Untagged specs must pass with only the frontend running.
+- Locate elements the way users find them: `getByRole`, `getByLabel`, `getByText`, using the Title Case UI text. Don't use CSS classes or test IDs unless there's no accessible handle.
+- A new user-facing flow or page gets specs for its main path and its important states (validation error, empty, permission denied) in the same piece of work. Name spec files by feature, e.g. `e2e/companies.spec.ts`.
+- Run `npm run test:e2e` (all specs, needs the backend) or `npx playwright test --grep-invert @backend` (frontend only). If the backend wasn't running, say which specs weren't run.
 
 ## Documentation
 

@@ -505,7 +505,10 @@ After implementation:
 4. Check console errors.
 5. Check desktop and mobile layouts.
 6. Fix visible problems.
-7. Run relevant tests.
+7. Add or update Playwright specs in `frontend/e2e/` for the page's main flow and important states.
+8. Run relevant tests, including `npm run test:e2e`.
+
+Playwright is the browser tool for these steps. Its `desktop` and `mobile` projects cover both layouts, and the shared fixture fails a test on console errors. See "Frontend end-to-end tests" in the root `CLAUDE.md`.
 
 The agent must not report a UI task as complete based only on successful compilation.
 
@@ -527,7 +530,8 @@ A UI task is complete when:
 - [ ] Responsive layout was checked.
 - [ ] No unintended overflow exists.
 - [ ] No console errors remain.
-- [ ] Tests pass where applicable.
+- [ ] Playwright specs cover the main flow and important states.
+- [ ] Tests pass where applicable, including the Playwright suite on desktop and mobile.
 - [ ] Browser verification is complete.
 - [ ] Remaining limitations are documented.
 
